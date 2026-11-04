@@ -55,7 +55,8 @@ input:focus-visible {
 button:disabled,
 .file-button[aria-disabled="true"] {
   cursor: not-allowed;
-  opacity: 0.55;
+  background: #343A44;
+  color: #C7CDD6;
   filter: grayscale(0.35);
 }
 

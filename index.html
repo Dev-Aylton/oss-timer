@@ -23,7 +23,6 @@
   <div class="app" id="app" data-phase="preparar" data-status="parado">
     <header class="topbar">
       <p class="brand">OSS TIMER</p>
-      <p class="instruction">Toque no tempo para iniciar ou pausar</p>
     </header>
 
     <main class="timer-area view" id="timer-view" aria-live="polite">
@@ -60,7 +59,7 @@
         <label class="file-button" for="importar-json">Importar JSON</label>
         <input id="importar-json" type="file" accept=".json,application/json">
       </div>
-      <p id="storage-mensagem" class="mensagem" role="status"></p>
+      <p id="storage-mensagem" class="mensagem" role="status" aria-live="polite"></p>
     </section>
   </main>
   <main class="tab-view livre-view" id="livre-view" hidden>
@@ -69,10 +68,12 @@
       <button id="livre-toggle" type="button">Iniciar</button>
       <button id="livre-reset" type="button">Zerar</button>
     </div>
+    <p id="livre-status" class="mensagem" role="status" aria-live="polite"></p>
   </main>
   <main class="tab-view" id="historico-view" hidden>
     <div class="tab-heading"><h1>Histórico</h1><button id="historico-limpar" type="button">Limpar tudo</button></div>
     <div id="historico-lista"></div>
+    <p id="historico-status" class="mensagem" role="status" aria-live="polite"></p>
   </main>
   <main class="tab-view" id="ajustes-view" hidden>
     <h1>Ajustes</h1>

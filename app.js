@@ -27,34 +27,46 @@
 
   function solicitarWakeLock() {
     if (!ajustes.wake || !navigator.wakeLock || !navigator.wakeLock.request) return;
-    wakePedido = navigator.wakeLock.request("screen").then(function (bloqueio) {
-      wakeLock = bloqueio;
+    try {
+      wakePedido = navigator.wakeLock.request("screen").then(function (bloqueio) {
+        wakeLock = bloqueio;
+        wakePedido = null;
+      }).catch(function () {
+        wakePedido = null;
+      });
+    } catch (erro) {
       wakePedido = null;
-    }).catch(function () {
-      wakePedido = null;
-    });
+    }
   }
 
   function liberarWakeLock() {
     if (wakeLock && wakeLock.release) {
-      wakeLock.release().catch(function () {});
+      try {
+        Promise.resolve(wakeLock.release()).catch(function () {});
+      } catch (erro) {}
       wakeLock = null;
     }
   }
 
   function iniciarInteracao() {
-    if (ajustes.bipes) OssAudio.desbloquear();
+    if (ajustes.bipes) {
+      try { OssAudio.desbloquear(); } catch (erro) {}
+    }
     if (timer.estado().status !== "rodando") return;
     solicitarWakeLock();
   }
 
   function lidarEvento(evento) {
-    if (ajustes.bipes && evento.tipo === "fase") OssAudio.gongo();
-    if (ajustes.bipes && evento.tipo === "contagem") OssAudio.contagem();
-    if (ajustes.bipes && evento.tipo === "aviso") OssAudio.bipe();
-    if (ajustes.bipes && evento.tipo === "proximo") OssAudio.bipe();
-    if (ajustes.bipes && evento.tipo === "fim") OssAudio.gongo();
-    if (ajustes.voz) OssVoice.falar(OssVoice.fraseEvento(evento));
+    if (ajustes.bipes) {
+      try {
+        if (evento.tipo === "fase" || evento.tipo === "fim") OssAudio.gongo();
+        else if (evento.tipo === "contagem") OssAudio.contagem();
+        else if (evento.tipo === "aviso" || evento.tipo === "proximo") OssAudio.bipe();
+      } catch (erro) {}
+    }
+    if (ajustes.voz) {
+      try { OssVoice.falar(OssVoice.fraseEvento(evento)); } catch (erro) {}
+    }
     if (evento.tipo === "fim") registrarHistorico();
   }
 
@@ -91,7 +103,7 @@
     timer.alternar();
     if (timer.estado().status === "rodando") iniciarInteracao();
     if (timer.estado().status !== "rodando") {
-      OssVoice.cancelar();
+      try { OssVoice.cancelar(); } catch (erro) {}
       liberarWakeLock();
     }
     renderizar(timer.estado());
@@ -99,12 +111,12 @@
 
   acao.addEventListener("click", alternar);
   pular.addEventListener("click", function () {
-    OssVoice.cancelar();
+    try { OssVoice.cancelar(); } catch (erro) {}
     timer.pular();
     renderizar(timer.estado());
   });
   reiniciar.addEventListener("click", function () {
-    OssVoice.cancelar();
+    try { OssVoice.cancelar(); } catch (erro) {}
     liberarWakeLock();
     timer.reset();
     renderizar(timer.estado());
@@ -115,7 +127,7 @@
     renderizar(timer.estado());
   });
   repetir.addEventListener("click", function () {
-    OssVoice.cancelar();
+    try { OssVoice.cancelar(); } catch (erro) {}
     timer.reset();
     timer.iniciar();
     iniciarInteracao();
@@ -171,23 +183,28 @@
 
   function configurarLivre() {
     document.getElementById("livre-toggle").addEventListener("click", function () {
+      var botao = this;
       if (livreRodando) {
         livreAcumulado += Date.now() - livreInicio;
         livreRodando = false;
         this.textContent = "Iniciar";
         liberarLivreWake();
+        estadoBotao(botao, "Pausado", "livre-status", "Pausado");
       } else {
         livreInicio = Date.now();
         livreRodando = true;
         this.textContent = "Pausar";
         solicitarLivreWake();
+        estadoBotao(botao, "Iniciando…", "livre-status", "Em andamento");
       }
       renderizarLivre();
     });
     document.getElementById("livre-reset").addEventListener("click", function () {
+      var botao = this;
       livreAcumulado = 0;
       livreInicio = Date.now();
       renderizarLivre();
+      estadoBotao(botao, "Zerando…", "livre-status", "Zerado");
     });
     renderizarLivre();
   }
@@ -201,14 +218,16 @@
 
   function solicitarLivreWake() {
     if (!ajustes.wake || !navigator.wakeLock || !navigator.wakeLock.request) return;
-    navigator.wakeLock.request("screen").then(function (bloqueio) {
-      livreWake = bloqueio;
-    }).catch(function () {});
+    try {
+      navigator.wakeLock.request("screen").then(function (bloqueio) {
+        livreWake = bloqueio;
+      }).catch(function () {});
+    } catch (erro) {}
   }
 
   function liberarLivreWake() {
     if (!livreWake) return;
-    livreWake.release().catch(function () {});
+    try { Promise.resolve(livreWake.release()).catch(function () {}); } catch (erro) {}
     livreWake = null;
   }
 
@@ -229,6 +248,8 @@
   function configurarHistorico() {
     document.getElementById("historico-limpar").addEventListener("click", function () {
       if (!historico.length || !window.confirm("Limpar todo o histórico?")) return;
+      var botao = this;
+      estadoBotao(botao, "Limpando…", "historico-status", "Limpo");
       historico = OssStorage.salvarHistorico([]);
       renderizarHistorico();
     });
@@ -255,6 +276,7 @@
       apagar.textContent = "Apagar";
       apagar.addEventListener("click", function () {
         if (!window.confirm("Apagar esta entrada?")) return;
+        estadoBotao(apagar, "Apagando…", "historico-status", "Apagado");
         historico = OssStorage.salvarHistorico(OssStorage.removerHistorico(historico, entrada.id));
         renderizarHistorico();
       });
@@ -354,6 +376,7 @@
       return;
     }
     if (!window.confirm("Excluir \"" + treino.nome + "\"?")) return;
+    estadoBotao(document.activeElement, "Excluindo…", "storage-mensagem", "Excluído");
     dadosTreino.treinos = dadosTreino.treinos.filter(function (item) { return item.id !== treino.id; });
     dadosTreino.treinos = OssStorage.garantirNaoVazio(dadosTreino.treinos);
     if (dadosTreino.treinoAtual === treino.id) dadosTreino.treinoAtual = dadosTreino.treinos[0].id;
@@ -398,6 +421,8 @@
     var erro = document.createElement("p");
     erro.className = "mensagem";
     erro.id = "editor-erro";
+    erro.setAttribute("role", "status");
+    erro.setAttribute("aria-live", "polite");
     editor.appendChild(erro);
     var salvar = document.createElement("button");
     salvar.type = "submit";
@@ -410,6 +435,8 @@
     editor.appendChild(cancelar);
     editor.onsubmit = function (evento) {
       evento.preventDefault();
+      salvar.disabled = true;
+      salvar.textContent = "Salvando…";
       campos.forEach(function (campo) {
         if (campo[2] === "number") item[campo[0]] = Number(editor.elements[campo[0]].value);
         else item[campo[0]] = editor.elements[campo[0]].value;
@@ -417,20 +444,35 @@
       item.avisosFim = avisosInput.value.split(",").map(function (valor) { return Number(valor.trim()); });
       var mensagem = OssStorage.validarTreino(item, dadosTreino.treinos);
       if (mensagem && !treino) mensagem = OssStorage.validarTreino(item, []);
-      if (mensagem) { erro.textContent = mensagem; return; }
+      if (mensagem) { erro.textContent = "Erro: " + mensagem; salvar.disabled = false; salvar.textContent = "Salvar"; return; }
       if (treino) {
         dadosTreino.treinos[dadosTreino.treinos.indexOf(treino)] = item;
       } else {
         dadosTreino.treinos.push(item);
       }
       OssStorage.salvar(dadosTreino);
-      editor.hidden = true;
+      erro.textContent = "Salvo";
       renderizarLista();
+      window.setTimeout(function () { editor.hidden = true; salvar.disabled = false; salvar.textContent = "Salvar"; }, 2500);
     };
   }
 
   function mostrarMensagem(texto) {
     document.getElementById("storage-mensagem").textContent = texto;
+  }
+
+  function estadoBotao(botao, andamento, statusId, resultado) {
+    var original = botao.textContent;
+    var status = document.getElementById(statusId);
+    botao.disabled = true;
+    botao.setAttribute("aria-disabled", "true");
+    botao.textContent = andamento;
+    if (status) status.textContent = resultado || andamento;
+    window.setTimeout(function () {
+      botao.disabled = false;
+      botao.removeAttribute("aria-disabled");
+      botao.textContent = original;
+    }, 2500);
   }
 
   function mensagemAcao(botao, texto, retorna) {
@@ -445,7 +487,7 @@
 
   function exportarJson() {
     var botao = document.getElementById("exportar-json");
-    mensagemAcao(botao, "Exportando…", "Exportar JSON");
+    estadoBotao(botao, "Exportando…", "storage-mensagem", "Exportando…");
     var blob = new Blob([JSON.stringify(dadosTreino, null, 2)], { type: "application/json" });
     var url = URL.createObjectURL(blob);
     var link = document.createElement("a");
@@ -453,8 +495,8 @@
     link.download = "oss-timer-treinos.json";
     link.click();
     URL.revokeObjectURL(url);
-    mostrarMensagem("Backup exportado.");
-    botao.textContent = "Copiado";
+    mostrarMensagem("Exportado");
+    botao.textContent = "Exportar JSON";
     window.setTimeout(function () {
       botao.disabled = false;
       botao.textContent = "Exportar JSON";
@@ -463,26 +505,28 @@
 
   function copiarJson() {
     var botao = document.getElementById("copiar-json");
-    mensagemAcao(botao, "Copiado", "Copiar JSON");
+    estadoBotao(botao, "Copiando…", "storage-mensagem", "Copiado");
     if (navigator.clipboard && navigator.clipboard.writeText) {
       navigator.clipboard.writeText(JSON.stringify(dadosTreino, null, 2)).then(function () {
-        mostrarMensagem("JSON copiado.");
-      }).catch(function () { mostrarMensagem("Não foi possível copiar o JSON."); });
+        mostrarMensagem("Copiado");
+      }).catch(function () { mostrarMensagem("Erro: não foi possível copiar"); });
     } else {
-      mostrarMensagem("Não foi possível copiar o JSON neste navegador.");
+      mostrarMensagem("Erro: copiar indisponível");
     }
   }
 
   function importarJson(evento) {
     var arquivo = evento.target.files[0];
     if (!arquivo) return;
+    var botao = document.querySelector('label[for="importar-json"]');
+    estadoBotao(botao, "Importando…", "storage-mensagem", "Importando…");
     var leitor = new FileReader();
     leitor.onload = function () {
       var resultado = OssStorage.validarImportacao(leitor.result);
-      if (!resultado.valido) { mostrarMensagem(resultado.erro); return; }
-      if (!window.confirm("Substituir todos os treinos pelo backup importado?")) return;
+      if (!resultado.valido) { mostrarMensagem("Erro: " + resultado.erro); botao.removeAttribute("aria-disabled"); botao.textContent = "Importar JSON"; return; }
+      if (!window.confirm("Substituir todos os treinos pelo backup importado?")) { botao.removeAttribute("aria-disabled"); botao.textContent = "Importar JSON"; return; }
       dadosTreino = OssStorage.salvar(resultado.dado);
-      mostrarMensagem("Backup importado.");
+      mostrarMensagem("Importado");
       renderizarLista();
     };
     leitor.readAsText(arquivo);
