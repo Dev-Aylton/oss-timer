@@ -1,6 +1,6 @@
 (function () {
   "use strict";
-  var APP_VERSION = "0.9.3";
+  var APP_VERSION = "0.9.4";
   var dados = OssStorage.ler();
   var treinoAtual = dados.treinos.filter(function (item) { return item.id === dados.treinoAtual; })[0] || dados.treinos[0];
   var config = OssStorage.normalizar(treinoAtual);
@@ -9,6 +9,18 @@
   var ajustes = OssStorage.lerAjustes();
   var historico = OssStorage.lerHistorico();
   var wakeLock = null;
+
+  var iconePlay = '<svg class="main-action-icon play-icon" viewBox="0 0 64 64" aria-hidden="true"><path d="M25 14a5 5 0 0 1 7.5-4.4l21 18a5 5 0 0 1 0 8.8l-21 18A5 5 0 0 1 25 50Z"/></svg>';
+  var iconePausa = '<svg class="main-action-icon pause-icon" viewBox="0 0 64 64" aria-hidden="true"><rect x="16" y="12" width="12" height="40" rx="4"/><rect x="36" y="12" width="12" height="40" rx="4"/></svg>';
+  function renderizarBotaoPrincipal(botao, estado, labelId) {
+    var rodando = estado.status === "rodando";
+    var pausado = estado.status === "pausado";
+    var texto = rodando ? "Pausar" : pausado ? "Retomar" : "Iniciar";
+    botao.innerHTML = rodando ? iconePausa : iconePlay;
+    botao.classList.toggle("is-paused", rodando);
+    botao.setAttribute("aria-label", texto);
+    document.getElementById(labelId).textContent = texto;
+  }
 
   function tocarAudio(fn) { if (!ajustes.bipes) return; try { fn(); } catch (erro) {} }
   function solicitarWakeLock() {
@@ -48,8 +60,7 @@
     document.getElementById("timer-display").textContent = OssView.formatarTempo(estado.restanteFase);
     document.getElementById("rounds-left").textContent = estado.status === "finalizado" ? 0 : estado.rondasParaTerminar;
     document.getElementById("cycles-left").textContent = estado.status === "finalizado" ? 0 : estado.ciclosParaTerminar;
-    document.getElementById("toggle-timer").firstElementChild.textContent = estado.status === "rodando" ? "Ⅱ" : "▶";
-    document.getElementById("action-label").textContent = estado.status === "rodando" ? "Pausar" : estado.status === "pausado" ? "Retomar" : "Iniciar";
+    renderizarBotaoPrincipal(document.getElementById("toggle-timer"), estado, "action-label");
     document.getElementById("treino-atual").innerHTML = treinoAtual.nome + "<small>" + OssView.formatarTempo(estado.restanteTotal) + "</small>";
     var proxima = estado.proxima;
     var faixa = document.getElementById("next-phase");
@@ -95,8 +106,7 @@
     document.getElementById("rondas-phase-name").textContent = estado.status === "finalizado" ? "Finalizado" : (estado.nomeFase || "Preparar");
     document.getElementById("rondas-display").textContent = OssView.formatarTempo(estado.restanteFase);
     document.getElementById("rondas-left").textContent = estado.status === "finalizado" ? 0 : estado.rondasParaTerminar;
-    document.getElementById("rondas-toggle").textContent = estado.status === "rodando" ? "Ⅱ" : "▶";
-    document.getElementById("rondas-action-label").textContent = estado.status === "rodando" ? "Pausar" : estado.status === "pausado" ? "Retomar" : "Iniciar";
+    renderizarBotaoPrincipal(document.getElementById("rondas-toggle"), estado, "rondas-action-label");
     var faixa = document.getElementById("rondas-next");
     faixa.hidden = !estado.proxima;
     if (estado.proxima) {
@@ -116,8 +126,7 @@
     var estadoLivre = livre.estado();
     var ms = estadoLivre.decorrido * 1000;
     document.getElementById("livre-tempo").textContent = formatarLivre(ms);
-    document.getElementById("livre-action-label").textContent = estadoLivre.status === "rodando" ? "Pausar" : estadoLivre.status === "pausado" ? "Retomar" : "Iniciar";
-    document.getElementById("livre-toggle").textContent = estadoLivre.status === "rodando" ? "Ⅱ" : "▶";
+    renderizarBotaoPrincipal(document.getElementById("livre-toggle"), estadoLivre, "livre-action-label");
     document.getElementById("livre-volta").textContent = "—";
   }
   document.getElementById("livre-toggle").addEventListener("click", function () {
