@@ -5,9 +5,11 @@
   var CHAVE_AJUSTES = "oss-timer.ajustes.v2";
   var CHAVE_AJUSTES_ANTIGA = "oss-timer.ajustes.v1";
   var CHAVE_HISTORICO = "oss-timer.historico.v1";
+  var CHAVE_RONDAS = "oss-timer.rondas.v1";
   var memoria = null;
   var memoriaAjustes = null;
   var memoriaHistorico = null;
+  var memoriaRondas = null;
   var inteiros = ["preparar", "exercicio", "descanso", "rondas", "ciclos", "descansoCiclo", "relaxe", "avisoProximo"];
   var limites = {
     preparar: [0, 3600], exercicio: [0, 86400], descanso: [0, 86400],
@@ -188,6 +190,50 @@
     return memoriaHistorico;
   }
 
+  function rondasPadrao() {
+    return {
+      nome: "Rondas", preparar: 5, exercicio: 300, descanso: 0, rondas: 5,
+      ciclos: 1, descansoCiclo: 0, relaxe: 0, avisosFim: [30, 10], avisoProximo: 10
+    };
+  }
+
+  function normalizarRondas(dado) {
+    var base = rondasPadrao();
+    var normalizado;
+    try {
+      var candidato = Object.assign({}, base, dado || {});
+      ["preparar","exercicio","descanso","rondas","ciclos","descansoCiclo","relaxe","avisoProximo"].forEach(function (campo) {
+        if (!Number.isInteger(candidato[campo]) || candidato[campo] < 0 ||
+            ((campo === "rondas" || campo === "ciclos") && candidato[campo] < 1)) {
+          candidato[campo] = base[campo];
+        }
+      });
+      normalizado = normalizar(candidato);
+    } catch (erro) {
+      normalizado = normalizar(base);
+    }
+    normalizado.nome = "Rondas";
+    normalizado.rondas = normalizado.rondas;
+    return normalizado;
+  }
+
+  function lerRondas() {
+    if (memoriaRondas) return memoriaRondas;
+    var valor = lerChave(CHAVE_RONDAS, null);
+    try {
+      memoriaRondas = valor ? normalizarRondas(valor) : rondasPadrao();
+    } catch (erro) {
+      memoriaRondas = rondasPadrao();
+    }
+    return memoriaRondas;
+  }
+
+  function salvarRondas(dado) {
+    try { memoriaRondas = normalizarRondas(dado); }
+    catch (erro) { memoriaRondas = rondasPadrao(); }
+    return salvarChave(CHAVE_RONDAS, memoriaRondas);
+  }
+
   function adicionarHistorico(lista, entrada) {
     var base = Array.isArray(lista) ? lista.slice() : [];
     if (!entrada || typeof entrada !== "object") return base.slice(0, 200);
@@ -231,6 +277,8 @@
     normalizarAjustes: normalizarAjustes, lerAjustes: lerAjustes, salvarAjustes: salvarAjustes,
     lerHistorico: lerHistorico, adicionarHistorico: adicionarHistorico,
     removerHistorico: removerHistorico, salvarHistorico: salvarHistorico,
-    formatarDuracao: formatarDuracao
+    formatarDuracao: formatarDuracao,
+    CHAVE_RONDAS: CHAVE_RONDAS, rondasPadrao: rondasPadrao,
+    normalizarRondas: normalizarRondas, lerRondas: lerRondas, salvarRondas: salvarRondas
   };
 }((typeof globalThis !== "undefined" ? globalThis : this)));

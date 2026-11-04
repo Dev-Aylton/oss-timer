@@ -6,7 +6,7 @@
   }
 
   function corDaFase(fase, restante, status) {
-    if (status === "finalizado") return "#8B5CF6";
+    if (status === "finalizado") return "#C4B5FD";
     if (!fase) return "#0E1116";
     if (fase.tipo === "preparar") return "#FFB020";
     if (fase.tipo === "exercicio") return restante <= 30 ? "#FF7A1A" : "#19C37D";

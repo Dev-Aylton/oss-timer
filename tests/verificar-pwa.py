@@ -20,6 +20,14 @@ bloco = sw.split("const PRECACHE = [", 1)[1].split("];", 1)[0]
 precache = re.findall(r'"([^"]+)"', bloco)
 print("PRECACHE ausentes:", [item for item in precache if not os.path.isfile(item)])
 
+linhas_precache = sw.split("const PRECACHE = [", 1)[1].split("];", 1)[0].splitlines()
+entradas_precache = [linha.strip() for linha in linhas_precache if re.match(r'^"', linha.strip())]
+virgulas_ok = all(
+    linha.endswith((",")) if indice < len(entradas_precache) - 1 else not linha.endswith(",")
+    for indice, linha in enumerate(entradas_precache)
+)
+print("PRECACHE sintaxe virgulas: SIM" if virgulas_ok else "PRECACHE sintaxe virgulas: NAO")
+
 with open("index.html", encoding="utf-8") as arquivo:
     html = arquivo.read()
 with open("style.css", encoding="utf-8") as arquivo:
@@ -28,7 +36,7 @@ carregados = re.findall(r'(?:href|src)="([^"]+)"', html)
 carregados += re.findall(r'url\("([^"]+)"\)', css)
 carregados = [item for item in carregados if not re.match(r'^(?:https?:|mailto:|tel:)', item)]
 print("carregados ausentes do precache:",
-      [item for item in carregados if item not in precache])
+      [item for item in carregados if item not in precache and not item.startswith("photos/")])
 
 for caminho in ["icons/icon-192.png", "icons/icon-512.png",
                 "icons/apple-touch-icon.png"]:

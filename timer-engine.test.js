@@ -348,7 +348,7 @@
       equal(OssView.corDaFase({ tipo: "exercicio" }, 31), "#19C37D");
       equal(OssView.corDaFase({ tipo: "descanso" }, 35), "#E5484D");
       equal(OssView.corDaFase({ tipo: "descansoCiclo" }, 35), "#3B82F6");
-      equal(OssView.corDaFase(null, 0, "finalizado"), "#8B5CF6");
+      equal(OssView.corDaFase(null, 0, "finalizado"), "#C4B5FD");
     });
 
     it("destaca laranja apenas nos últimos 30 segundos do exercício", function () {
@@ -531,6 +531,34 @@
       };
       OssAudio._sequencia();
       deepEqual(sinais, ["contagem", "bipe", "bipe", "gongo"]);
+    });
+
+    it("configuração padrão de Rondas usa 5 segundos de preparação e 5 rondas", function () {
+      var config = OssStorage.rondasPadrao();
+      equal(config.preparar, 5);
+      equal(config.rondas, 5);
+      equal(config.descanso, 0);
+    });
+
+    it("configuração inválida de Rondas usa o padrão seguro", function () {
+      var config = OssStorage.normalizarRondas({ preparar: -1, rondas: 0 });
+      equal(config.preparar, 5);
+      equal(config.rondas, 5);
+    });
+
+    it("estado expõe rondas e ciclos restantes", function () {
+      var timer = new OssEngine.Timer({ rondas: 3, exercicio: 10, descanso: 0 });
+      timer.iniciar();
+      var estado = timer.estado();
+      equal(estado.rondasParaTerminar >= 3, true);
+      equal(estado.ciclosParaTerminar >= 1, true);
+    });
+
+    it("validação de Rondas preserva os campos de intervalo obrigatórios", function () {
+      var config = OssStorage.normalizarRondas({ exercicio: 120, ciclos: 2 });
+      equal(config.exercicio, 120);
+      equal(config.ciclos, 2);
+      equal(config.nome, "Rondas");
     });
   });
 

@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="160" height="160" viewBox="0 0 160 160">
+  <rect width="160" height="160" fill="#0E1116"/>
+  <circle cx="80" cy="80" r="52" fill="none" stroke="#FFB020" stroke-width="16" stroke-dasharray="100 226.7" stroke-dashoffset="0" transform="rotate(-90 80 80)"/>
+  <circle cx="80" cy="80" r="52" fill="none" stroke="#19C37D" stroke-width="16" stroke-dasharray="100 226.7" stroke-dashoffset="-108.9" transform="rotate(-90 80 80)"/>
+  <circle cx="80" cy="80" r="52" fill="none" stroke="#E5484D" stroke-width="16" stroke-dasharray="100 226.7" stroke-dashoffset="-217.8" transform="rotate(-90 80 80)"/>
+  <text x="80" y="94" fill="#F5F7FA" font-family="Bebas Neue, sans-serif" font-size="40" font-weight="700" letter-spacing="2" text-anchor="middle">OSS</text>
+</svg>
