@@ -381,6 +381,48 @@
       equal(rotulos.acao, "Repetir");
     });
 
+    it("normaliza um treino com valores padrão do SPARRING", function () {
+      var treino = OssStorage.normalizar({ nome: "  SPARRING  ", id: "teste" });
+      equal(treino.nome, "SPARRING");
+      equal(treino.exercicio, 300);
+      deepEqual(treino.avisosFim, [30, 10]);
+    });
+
+    it("valida campos inteiros e nome do treino", function () {
+      var treino = OssStorage.treinoSparring();
+      equal(OssStorage.validarTreino(treino), "");
+      equal(OssStorage.validarTreino({ nome: "", exercicio: 300 }), "O nome deve ter entre 1 e 40 caracteres.");
+      treino.exercicio = -1;
+      equal(Boolean(OssStorage.validarTreino(treino)), true);
+    });
+
+    it("migrar versão preserva pelo menos um treino", function () {
+      var migrado = OssStorage.migrar({});
+      equal(migrado.version, 1);
+      equal(migrado.treinos.length, 1);
+      equal(migrado.treinos[0].nome, "SPARRING");
+    });
+
+    it("rejeita JSON de importação inválido sem substituição", function () {
+      equal(OssStorage.validarImportacao("{").valido, false);
+      equal(OssStorage.validarImportacao({"treinos": []}).valido, false);
+      equal(OssStorage.validarImportacao({"treinos": [
+        { nome: "Teste", id: "x", preparacao: 10 }
+      ]}).valido, false);
+    });
+
+    it("calcula duração total de um treino salvo", function () {
+      var treino = OssStorage.treinoSparring();
+      equal(OssEngine.totalSegundos(OssEngine.construirFases(treino)), 3325);
+      equal(OssEngine.formatar(3325), "55:25");
+    });
+
+    it("garante que a lista nunca fica vazia", function () {
+      var lista = OssStorage.garantirNaoVazio([]);
+      equal(lista.length, 1);
+      equal(lista[0].nome, "SPARRING");
+    });
+
     it("seleciona Luciana entre as vozes pt-BR", function () {
       var voz = OssVoice.escolherVoz(null, [
         { name: "Maria", lang: "pt-BR" },

@@ -36,6 +36,73 @@ button {
   font: inherit;
 }
 
+.tab-bar {
+  position: fixed;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 20;
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 0.25rem;
+  padding: 0.35rem max(0.35rem, env(safe-area-inset-right)) max(0.35rem, env(safe-area-inset-bottom)) max(0.35rem, env(safe-area-inset-left));
+  border-top: 1px solid #9AA4B2;
+  background: #0E1116;
+}
+
+.tab-bar button,
+.tab-view button,
+.tab-view .file-button {
+  min-height: 44px;
+  border: 1px solid #9AA4B2;
+  border-radius: 0.55rem;
+  background: #1A1F27;
+  color: #F5F7FA;
+  font-size: clamp(14px, 2.8vw, 16px);
+  font-weight: 700;
+}
+
+.tab-view {
+  min-height: 100dvh;
+  padding: 1rem 1rem 5rem;
+  background: #0E1116;
+  color: #F5F7FA;
+}
+
+.tab-heading,
+.treino-card,
+.backup-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.tab-heading { justify-content: space-between; }
+.tab-heading h1 { margin: 0; }
+.treino-lista { display: grid; gap: 0.75rem; }
+.treino-card {
+  flex-wrap: wrap;
+  justify-content: space-between;
+  padding: 0.75rem;
+  border: 1px solid #9AA4B2;
+  border-radius: 0.75rem;
+  background: #1A1F27;
+}
+.treino-escolha {
+  flex: 1 1 15rem;
+  text-align: left;
+}
+.treino-actions { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+.treino-editor { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.75rem; max-width: 52rem; margin-top: 1rem; }
+.treino-editor label { display: grid; gap: 0.35rem; min-width: 0; color: #F5F7FA; }
+.treino-editor input { min-width: 0; min-height: 44px; border: 1px solid #9AA4B2; border-radius: 0.55rem; background: #0E1116; color: #F5F7FA; font-size: 16px; }
+.mensagem { color: #F5F7FA; min-height: 1.25rem; }
+.backup { margin-top: 1.25rem; }
+.backup-actions { flex-wrap: wrap; }
+.backup-actions input { position: absolute; width: 1px; height: 1px; opacity: 0; }
+.file-button { display: inline-flex; align-items: center; justify-content: center; padding: 0.5rem 0.75rem; cursor: pointer; }
+.tab-view p, .tab-view button, .tab-view label, .tab-view input { overflow-wrap: normal; }
+
 .app {
   --ink: #F5F7FA;
   display: grid;

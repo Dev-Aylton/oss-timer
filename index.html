@@ -10,6 +10,7 @@
   <script src="app-ui.js" defer></script>
   <script src="audio.js" defer></script>
   <script src="voice.js" defer></script>
+  <script src="storage.js" defer></script>
   <script src="app.js" defer></script>
 </head>
 <body>
@@ -19,7 +20,7 @@
       <p class="instruction">Toque no tempo para iniciar ou pausar</p>
     </header>
 
-    <main class="timer-area" aria-live="polite">
+    <main class="timer-area view" id="timer-view" aria-live="polite">
       <h1 class="phase-name" id="phase-name">Preparar</h1>
       <button class="timer-display" id="timer-display" type="button"
         aria-label="Toque para iniciar ou pausar. Toque longo para voltar à fase anterior.">
@@ -41,5 +42,30 @@
       </div>
     </footer>
   </div>
+  <main class="tab-view" id="treinos-view" hidden>
+    <div class="tab-heading"><h1>Treinos</h1><button id="novo-treino" class="secondary-button" type="button">Novo treino</button></div>
+    <div id="treino-lista" class="treino-lista"></div>
+    <form id="treino-editor" class="treino-editor" hidden></form>
+    <section class="backup">
+      <h2>Backup</h2>
+      <div class="backup-actions">
+        <button id="exportar-json" type="button">Exportar JSON</button>
+        <button id="copiar-json" type="button">Copiar JSON</button>
+        <label class="file-button" for="importar-json">Importar JSON</label>
+        <input id="importar-json" type="file" accept=".json,application/json">
+      </div>
+      <p id="storage-mensagem" class="mensagem" role="status"></p>
+    </section>
+  </main>
+  <main class="tab-view" id="livre-view" hidden><h1>Livre</h1><p>Em breve</p></main>
+  <main class="tab-view" id="historico-view" hidden><h1>Histórico</h1><p>Em breve</p></main>
+  <main class="tab-view" id="ajustes-view" hidden><h1>Ajustes</h1><p>Em breve</p></main>
+  <nav class="tab-bar" aria-label="Navegação principal">
+    <button data-tab="timer-view" type="button">Timer</button>
+    <button data-tab="treinos-view" type="button" aria-current="page">Treinos</button>
+    <button data-tab="livre-view" type="button">Livre</button>
+    <button data-tab="historico-view" type="button">Histórico</button>
+    <button data-tab="ajustes-view" type="button">Ajustes</button>
+  </nav>
 </body>
 </html>

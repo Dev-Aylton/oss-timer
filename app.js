@@ -1,7 +1,11 @@
 (function () {
   "use strict";
 
-  var config = OssEngine.PRESET_SPARRING;
+  var dadosTreino = OssStorage.ler();
+  var treinoAtual = dadosTreino.treinos.filter(function (item) {
+    return item.id === dadosTreino.treinoAtual;
+  })[0] || dadosTreino.treinos[0];
+  var config = OssStorage.normalizar(treinoAtual);
   var timer = new OssEngine.Timer(config);
   var app = document.getElementById("app");
   var numero = document.getElementById("timer-display");
@@ -17,6 +21,7 @@
   var toqueLongo = false;
   var wakeLock = null;
   var wakePedido = null;
+  var abaAtual = "timer-view";
 
   function solicitarWakeLock() {
     if (!navigator.wakeLock || !navigator.wakeLock.request) return;
@@ -140,8 +145,206 @@
   });
 
   renderizar(timer.estado());
+  configurarAbas();
+  configurarTreinos();
   window.setInterval(function () {
     timer.tick();
     renderizar(timer.estado());
   }, 200);
+
+  function configurarAbas() {
+    document.querySelectorAll("[data-tab]").forEach(function (botao) {
+      botao.addEventListener("click", function () {
+        abaAtual = botao.dataset.tab;
+        document.querySelectorAll("[data-tab]").forEach(function (item) {
+          item.setAttribute("aria-current", item === botao ? "page" : "false");
+        });
+        document.querySelectorAll(".tab-view, .app").forEach(function (view) {
+          view.hidden = view.id !== abaAtual;
+        });
+        if (abaAtual === "treinos-view") renderizarLista();
+      });
+    });
+  }
+
+  function configurarTreinos() {
+    document.getElementById("novo-treino").addEventListener("click", function () {
+      abrirEditor();
+    });
+    document.getElementById("exportar-json").addEventListener("click", exportarJson);
+    document.getElementById("copiar-json").addEventListener("click", copiarJson);
+    document.getElementById("importar-json").addEventListener("change", importarJson);
+  }
+
+  function renderizarLista() {
+    var lista = document.getElementById("treino-lista");
+    lista.textContent = "";
+    dadosTreino.treinos.forEach(function (treino) {
+      var card = document.createElement("article");
+      card.className = "treino-card";
+      var fases = OssEngine.construirFases(treino);
+      var titulo = document.createElement("button");
+      titulo.type = "button";
+      titulo.className = "treino-escolha";
+      titulo.textContent = treino.nome + " — " + OssEngine.formatar(OssEngine.totalSegundos(fases));
+      titulo.addEventListener("click", function () { escolherTreino(treino.id); });
+      var actions = document.createElement("div");
+      actions.className = "treino-actions";
+      actions.appendChild(botaoAcao("Editar", function () { abrirEditor(treino); }));
+      actions.appendChild(botaoAcao("Duplicar", function () { duplicarTreino(treino); }));
+      actions.appendChild(botaoAcao("Excluir", function () { excluirTreino(treino); }, true));
+      card.appendChild(titulo);
+      card.appendChild(actions);
+      lista.appendChild(card);
+    });
+  }
+
+  function botaoAcao(texto, acao, excluir) {
+    var botao = document.createElement("button");
+    botao.type = "button";
+    botao.textContent = texto;
+    if (excluir) botao.className = "perigo";
+    botao.addEventListener("click", acao);
+    return botao;
+  }
+
+  function escolherTreino(id) {
+    dadosTreino.treinoAtual = id;
+    dadosTreino = OssStorage.salvar(dadosTreino);
+    treinoAtual = dadosTreino.treinos.filter(function (item) { return item.id === id; })[0];
+    config = OssStorage.normalizar(treinoAtual);
+    timer = new OssEngine.Timer(config);
+    timer.aoEvento(lidarEvento);
+    renderizar(timer.estado());
+  }
+
+  function duplicarTreino(treino) {
+    var copia = OssStorage.normalizar(treino);
+    copia.id = "treino-" + Date.now().toString(36);
+    copia.nome = (copia.nome + " cópia").slice(0, 40);
+    dadosTreino.treinos.push(copia);
+    OssStorage.salvar(dadosTreino);
+    renderizarLista();
+  }
+
+  function excluirTreino(treino) {
+    if (dadosTreino.treinos.length === 1) {
+      mostrarMensagem("É necessário manter pelo menos um treino.");
+      return;
+    }
+    if (!window.confirm("Excluir \"" + treino.nome + "\"?")) return;
+    dadosTreino.treinos = dadosTreino.treinos.filter(function (item) { return item.id !== treino.id; });
+    dadosTreino.treinos = OssStorage.garantirNaoVazio(dadosTreino.treinos);
+    if (dadosTreino.treinoAtual === treino.id) dadosTreino.treinoAtual = dadosTreino.treinos[0].id;
+    OssStorage.salvar(dadosTreino);
+    renderizarLista();
+  }
+
+  function abrirEditor(treino) {
+    var editor = document.getElementById("treino-editor");
+    var item = treino ? OssStorage.normalizar(treino) : OssStorage.normalizar({
+      id: "treino-" + Date.now().toString(36),
+      nome: "Novo treino",
+      preparar: 10, exercicio: 300, descanso: 35, rondas: 10, ciclos: 1,
+      descansoCiclo: 0, relaxe: 0, avisosFim: [30, 10], avisoProximo: 10
+    });
+    editor.innerHTML = "";
+    editor.hidden = false;
+    var campos = [
+      ["nome", "Nome", "text"], ["preparar", "Preparar (s)", "number"],
+      ["exercicio", "Exercício (s)", "number"], ["descanso", "Descanso (s)", "number"],
+      ["rondas", "Rondas", "number"], ["ciclos", "Ciclos", "number"],
+      ["descansoCiclo", "Descanso entre ciclos (s)", "number"],
+      ["relaxe", "Relaxe (s)", "number"], ["avisoProximo", "Aviso próximo (s)", "number"]
+    ];
+    campos.forEach(function (campo) {
+      var label = document.createElement("label");
+      label.textContent = campo[1];
+      var input = document.createElement("input");
+      input.name = campo[0];
+      input.type = campo[2];
+      input.value = item[campo[0]];
+      label.appendChild(input);
+      editor.appendChild(label);
+    });
+    var avisos = document.createElement("label");
+    avisos.textContent = "Avisos do fim, separados por vírgula";
+    var avisosInput = document.createElement("input");
+    avisosInput.name = "avisosFim";
+    avisosInput.value = item.avisosFim.join(", ");
+    avisos.appendChild(avisosInput);
+    editor.appendChild(avisos);
+    var erro = document.createElement("p");
+    erro.className = "mensagem";
+    erro.id = "editor-erro";
+    editor.appendChild(erro);
+    var salvar = document.createElement("button");
+    salvar.type = "submit";
+    salvar.textContent = "Salvar";
+    editor.appendChild(salvar);
+    var cancelar = document.createElement("button");
+    cancelar.type = "button";
+    cancelar.textContent = "Cancelar";
+    cancelar.addEventListener("click", function () { editor.hidden = true; });
+    editor.appendChild(cancelar);
+    editor.onsubmit = function (evento) {
+      evento.preventDefault();
+      campos.forEach(function (campo) {
+        if (campo[2] === "number") item[campo[0]] = Number(editor.elements[campo[0]].value);
+        else item[campo[0]] = editor.elements[campo[0]].value;
+      });
+      item.avisosFim = avisosInput.value.split(",").map(function (valor) { return Number(valor.trim()); });
+      var mensagem = OssStorage.validarTreino(item, dadosTreino.treinos);
+      if (mensagem && !treino) mensagem = OssStorage.validarTreino(item, []);
+      if (mensagem) { erro.textContent = mensagem; return; }
+      if (treino) {
+        dadosTreino.treinos[dadosTreino.treinos.indexOf(treino)] = item;
+      } else {
+        dadosTreino.treinos.push(item);
+      }
+      OssStorage.salvar(dadosTreino);
+      editor.hidden = true;
+      renderizarLista();
+    };
+  }
+
+  function mostrarMensagem(texto) {
+    document.getElementById("storage-mensagem").textContent = texto;
+  }
+
+  function exportarJson() {
+    var blob = new Blob([JSON.stringify(dadosTreino, null, 2)], { type: "application/json" });
+    var url = URL.createObjectURL(blob);
+    var link = document.createElement("a");
+    link.href = url;
+    link.download = "oss-timer-treinos.json";
+    link.click();
+    URL.revokeObjectURL(url);
+    mostrarMensagem("Backup exportado.");
+  }
+
+  function copiarJson() {
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(JSON.stringify(dadosTreino, null, 2)).then(function () {
+        mostrarMensagem("JSON copiado.");
+      }).catch(function () { mostrarMensagem("Não foi possível copiar o JSON."); });
+    } else {
+      mostrarMensagem("Não foi possível copiar o JSON neste navegador.");
+    }
+  }
+
+  function importarJson(evento) {
+    var arquivo = evento.target.files[0];
+    if (!arquivo) return;
+    var leitor = new FileReader();
+    leitor.onload = function () {
+      var resultado = OssStorage.validarImportacao(leitor.result);
+      if (!resultado.valido) { mostrarMensagem(resultado.erro); return; }
+      if (!window.confirm("Substituir todos os treinos pelo backup importado?")) return;
+      dadosTreino = OssStorage.salvar(resultado.dado);
+      mostrarMensagem("Backup importado.");
+      renderizarLista();
+    };
+    leitor.readAsText(arquivo);
+  }
 }());
