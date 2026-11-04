@@ -1,6 +1,6 @@
 (function () {
   "use strict";
-  var APP_VERSION = "0.9.0";
+  var APP_VERSION = "0.9.1";
   var dados = OssStorage.ler();
   var treinoAtual = dados.treinos.filter(function (item) { return item.id === dados.treinoAtual; })[0] || dados.treinos[0];
   var config = OssStorage.normalizar(treinoAtual);
@@ -69,6 +69,16 @@
     } else liberarWakeLock();
     renderizarTimer();
   });
+  document.addEventListener("visibilitychange", function () {
+    if (timer.estado().status === "rodando") timer.tick();
+    if (rondasTimer.estado().status === "rodando") rondasTimer.tick();
+    if (!document.hidden) {
+      renderizarTimer();
+      renderizarRondas();
+      renderizarLivre();
+    }
+  });
+  window.addEventListener("pagehide", function () { liberarWakeLock(); });
   document.getElementById("skip-phase").addEventListener("click", function () { timer.pular(); renderizarTimer(); });
   document.getElementById("previous-phase").addEventListener("click", function () { timer.anterior(); renderizarTimer(); });
   document.getElementById("reset-timer").addEventListener("click", function () { liberarWakeLock(); timer.reset(); renderizarTimer(); });

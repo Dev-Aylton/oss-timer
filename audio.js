@@ -6,8 +6,14 @@
   function contextoDesbloqueado() {
     var construtor = root.AudioContext || root.webkitAudioContext;
     if (!construtor) return null;
-    if (!contexto) contexto = new construtor();
-    if (contexto.state === "suspended" && contexto.resume) contexto.resume();
+    if (!contexto) {
+      contexto = new construtor();
+    }
+    if (contexto.state === "suspended" && contexto.resume) {
+      try {
+        Promise.resolve(contexto.resume()).catch(function () {});
+      } catch (erro) {}
+    }
     return contexto;
   }
 
