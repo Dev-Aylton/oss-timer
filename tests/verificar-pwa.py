@@ -17,6 +17,17 @@ app_version = re.search(r'var APP_VERSION = "([^"]+)"', open("app.js", encoding=
 if not cache_name or not app_version or cache_name.group(1) != "oss-timer-v" + app_version.group(1):
     raise SystemExit("CACHE_NAME nao corresponde a APP_VERSION")
 print("versao PWA: OK", app_version.group(1), cache_name.group(1))
+with open("style.css", encoding="utf-8") as arquivo:
+    css = arquivo.read()
+seletores_topo = re.compile(
+    r"(?:^|[\s,])(?:header|\.timer-top(?:[-\w]*)?|\.editor-header|\.modal-header)(?=[\s.#:[>,]|$)",
+    re.IGNORECASE,
+)
+for regra in re.finditer(r"([^{}]+)\{([^{}]*)\}", css):
+    seletor, declaracoes = regra.groups()
+    if seletores_topo.search(seletor) and re.search(r"(?:-webkit-)?backdrop-filter\s*:", declaracoes, re.IGNORECASE):
+        raise SystemExit("Blur no cabecalho do app: " + seletor.strip())
+print("Blur em seletores do topo: NAO")
 bloco = sw.split("const PRECACHE = [", 1)[1].split("];", 1)[0]
 precache = re.findall(r'"([^"]+)"', bloco)
 print("PRECACHE ausentes:", [item for item in precache if not os.path.isfile(item)])

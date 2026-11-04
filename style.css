@@ -1220,8 +1220,7 @@ span.workout-title { cursor: default; }
   grid-template-columns: minmax(72px, 1fr) minmax(0, 2fr) minmax(72px, 1fr);
   min-height: 72px;
   padding: 8px 18px;
-  background: rgba(16, 21, 18, 0.96);
-  backdrop-filter: blur(16px);
+  background: var(--canvas);
 }
 
 #editor-panel .editor-header > button {
