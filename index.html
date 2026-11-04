@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#0E1116">
+  <title>Oss Timer</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="timer-engine.js" defer></script>
+  <script src="app-ui.js" defer></script>
+  <script src="app.js" defer></script>
+</head>
+<body>
+  <div class="app" id="app" data-phase="preparar" data-status="parado">
+    <header class="topbar">
+      <p class="brand">OSS TIMER</p>
+      <p class="instruction">Toque no tempo para iniciar ou pausar</p>
+    </header>
+
+    <main class="timer-area" aria-live="polite">
+      <h1 class="phase-name" id="phase-name">Preparar</h1>
+      <button class="timer-display" id="timer-display" type="button"
+        aria-label="Toque para iniciar ou pausar. Toque longo para voltar à fase anterior.">
+        00:10
+      </button>
+      <div class="round-info" aria-label="Progresso do treino">
+        <p id="round-label">Ronda 1 de 10</p>
+        <p id="cycle-label">Ciclo 1 de 1</p>
+      </div>
+    </main>
+
+    <footer class="controls">
+      <p class="total-card">Tempo restante <strong id="total-remaining">55:25</strong></p>
+      <div class="button-row">
+        <button class="control-button primary" id="toggle-timer" type="button">Iniciar</button>
+        <button class="control-button" id="skip-phase" type="button">Pular</button>
+        <button class="control-button" id="reset-timer" type="button">Reiniciar</button>
+        <button class="control-button primary" id="repeat-timer" type="button" hidden>Repetir</button>
+      </div>
+    </footer>
+  </div>
+</body>
+</html>

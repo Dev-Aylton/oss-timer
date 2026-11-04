@@ -105,7 +105,7 @@
     var status = "parado";
     var inicioRelogio = 0;
     var decorridoPausado = 0;
-    var decorridoAnterior = 0;
+    var revisao = 0;
 
     function emitir(evento) {
       ouvintes.slice().forEach(function (fn) { fn(evento); });
@@ -165,11 +165,16 @@
     }
 
     function avancarCronograma(tempo) {
-      while (cursor < cronograma.length && cronograma[cursor].em <= tempo) {
-        emitir(cronograma[cursor].evento);
+      var revisaoAtual = revisao;
+      while (revisaoAtual === revisao &&
+             status === "rodando" &&
+             cursor < cronograma.length &&
+             cronograma[cursor].em <= tempo) {
+        var evento = cronograma[cursor].evento;
         cursor += 1;
+        emitir(evento);
       }
-      completarSeNecessario(tempo);
+      if (revisaoAtual === revisao) completarSeNecessario(tempo);
     }
 
     function emitirFaseAtual(indice) {
@@ -182,8 +187,8 @@
       status = "rodando";
       inicioRelogio = agora();
       if (fases.length) {
-        emitirFaseAtual(0);
         cursor = 1;
+        emitirFaseAtual(0);
       } else {
         status = "finalizado";
         emitir({ tipo: "fim" });
@@ -221,6 +226,7 @@
 
     this.pular = function () {
       if (status !== "rodando" && status !== "pausado") return this.estado();
+      revisao += 1;
       var tempo = tempoAtual();
       if (status === "rodando") avancarCronograma(tempo);
       if (status === "finalizado") return this.estado();
@@ -280,7 +286,7 @@
       status = "parado";
       inicioRelogio = 0;
       decorridoPausado = 0;
-      decorridoAnterior = 0;
+      revisao += 1;
       cursor = 0;
       return this.estado();
     };

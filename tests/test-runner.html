@@ -22,29 +22,8 @@
   <button id="executar" type="button">Executar novamente</button>
   <ol id="resultados"></ol>
   <script src="../timer-engine.js"></script>
+  <script src="../app-ui.js"></script>
   <script src="../timer-engine.test.js"></script>
-  <script>
-    (function () {
-      "use strict";
-      var botao = document.getElementById("executar");
-      botao.addEventListener("click", executar);
-      function executar() {
-        var resultados = OssTests.executar();
-        var aprovados = resultados.filter(function (r) { return r.passou; }).length;
-        document.getElementById("numTotal").textContent = resultados.length;
-        document.getElementById("numPass").textContent = aprovados;
-        document.getElementById("numFail").textContent = resultados.length - aprovados;
-        var lista = document.getElementById("resultados");
-        lista.textContent = "";
-        resultados.forEach(function (r) {
-          var item = document.createElement("li");
-          item.textContent = r.passou ? "PASSOU — " + r.nome : "FALHOU — " + r.nome + ": " + r.erro;
-          if (!r.passou) item.className = "falha";
-          lista.appendChild(item);
-        });
-      }
-      executar();
-    }());
-  </script>
+  <script src="test-runner.js"></script>
 </body>
 </html>

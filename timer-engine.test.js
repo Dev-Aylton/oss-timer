@@ -121,6 +121,89 @@
       ]);
     });
 
+    it("aoEvento pode chamar pular dentro do avanço sem repetir eventos", function () {
+      var clock = relogioFalso();
+      var timer = new OssEngine.Timer(cfg({ rondas: 2 }), { now: clock.now });
+      var contagens = 0;
+      var pulou = false;
+      timer.aoEvento(function (evento) {
+        if (evento.tipo === "contagem" && evento.valor === 3) {
+          contagens += 1;
+          if (!pulou) {
+            pulou = true;
+            timer.pular();
+          }
+        }
+      });
+      timer.iniciar();
+      clock.avancar(7);
+      timer.tick();
+      equal(contagens, 1);
+      equal(timer.estado().fase.tipo, "descanso");
+    });
+
+    it("aoEvento pode chamar pausar dentro do avanço sem repetir eventos", function () {
+      var clock = relogioFalso();
+      var timer = new OssEngine.Timer(cfg({ rondas: 2 }), { now: clock.now });
+      var contagens = 0;
+      var pausou = false;
+      timer.aoEvento(function (evento) {
+        if (evento.tipo === "contagem" && evento.valor === 3) {
+          contagens += 1;
+          if (!pausou) {
+            pausou = true;
+            timer.pausar();
+          }
+        }
+      });
+      timer.iniciar();
+      clock.avancar(7);
+      timer.tick();
+      equal(contagens, 1);
+      equal(timer.estado().status, "pausado");
+    });
+
+    it("aoEvento pode chamar reset dentro do avanço sem retomar eventos", function () {
+      var clock = relogioFalso();
+      var timer = new OssEngine.Timer(cfg({ rondas: 2 }), { now: clock.now });
+      var contagens = 0;
+      var reiniciou = false;
+      timer.aoEvento(function (evento) {
+        if (evento.tipo === "contagem" && evento.valor === 3) {
+          contagens += 1;
+          if (!reiniciou) {
+            reiniciou = true;
+            timer.reset();
+          }
+        }
+      });
+      timer.iniciar();
+      clock.avancar(7);
+      timer.tick();
+      equal(contagens, 1);
+      equal(timer.estado().status, "parado");
+    });
+
+    it("exceção de ouvinte é propagada após avançar o cursor", function () {
+      var clock = relogioFalso();
+      var timer = new OssEngine.Timer(cfg({ rondas: 2 }), { now: clock.now });
+      var disparos = 0;
+      timer.aoEvento(function (evento) {
+        if (evento.tipo === "contagem" && evento.valor === 3) {
+          disparos += 1;
+          throw new Error("falha do ouvinte");
+        }
+      });
+      timer.iniciar();
+      clock.avancar(7);
+      var propagou = false;
+      try { timer.tick(); } catch (erro) { propagou = erro.message === "falha do ouvinte"; }
+      assert(propagou, "A exceção do ouvinte deve ser propagada.");
+      timer.aoEvento(function () {});
+      try { timer.tick(); } catch (erro) {}
+      equal(disparos, 1);
+    });
+
     it("emite contagem 3, 2 e 1 antes do fim", function () {
       var clock = relogioFalso();
       var timer = new OssEngine.Timer(cfg({ exercicio: 4, rondas: 1 }), { now: clock.now });
@@ -253,6 +336,49 @@
       equal(volta.numero, 1);
       equal(volta.duracao, 5);
       equal(cronometro.voltas.length, 1);
+    });
+
+    it("formata tempo da tela como mm:ss", function () {
+      equal(OssView.formatarTempo(65), "01:05");
+      equal(OssView.formatarTempo(3325), "55:25");
+    });
+
+    it("usa a cor correspondente a cada fase", function () {
+      equal(OssView.corDaFase({ tipo: "preparar" }, 10), "#FFB020");
+      equal(OssView.corDaFase({ tipo: "exercicio" }, 31), "#19C37D");
+      equal(OssView.corDaFase({ tipo: "descanso" }, 35), "#E5484D");
+      equal(OssView.corDaFase({ tipo: "descansoCiclo" }, 35), "#3B82F6");
+      equal(OssView.corDaFase(null, 0, "finalizado"), "#8B5CF6");
+    });
+
+    it("destaca laranja apenas nos últimos 30 segundos do exercício", function () {
+      equal(OssView.corDaFase({ tipo: "exercicio" }, 31), "#19C37D");
+      equal(OssView.corDaFase({ tipo: "exercicio" }, 30), "#FF7A1A");
+      equal(OssView.corDaFase({ tipo: "exercicio" }, 1), "#FF7A1A");
+    });
+
+    it("gera rótulos da fase, ronda e ciclo atuais", function () {
+      var rotulos = OssView.rotulos({
+        status: "rodando",
+        fase: { tipo: "exercicio", ronda: 4, ciclo: 2 },
+        nomeFase: "Exercício",
+        restanteTotal: 125
+      }, { rondas: 10, ciclos: 3 });
+      equal(rotulos.fase, "Exercício");
+      equal(rotulos.ronda, "Ronda 4 de 10");
+      equal(rotulos.ciclo, "Ciclo 2 de 3");
+      equal(rotulos.total, "02:05");
+      equal(rotulos.acao, "Pausar");
+    });
+
+    it("gera rótulo Finalizado e ação Repetir", function () {
+      var rotulos = OssView.rotulos({
+        status: "finalizado", fase: null, nomeFase: null, restanteTotal: 0
+      }, { rondas: 10, ciclos: 2 });
+      equal(rotulos.fase, "Finalizado");
+      equal(rotulos.ronda, "Ronda 10 de 10");
+      equal(rotulos.ciclo, "Ciclo 2 de 2");
+      equal(rotulos.acao, "Repetir");
     });
   });
 
