@@ -3,9 +3,15 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <meta name="theme-color" content="#0E1116">
+  <meta name="theme-color" content="#101512">
+  <meta name="description" content="Timer profissional para jiu-jitsu, rounds e treinos intervalados.">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="Oss Timer">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <title>Oss Timer — Timer de treino</title>
   <link rel="icon" href="icons/favicon.png" type="image/png">
-  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="icons/apple-touch-icon.png">
   <link rel="manifest" href="manifest.json">
   <link rel="stylesheet" href="style.css">
   <script>window.errosApp=[];window.addEventListener("error",function(e){window.errosApp.push(String(e.message||e.error||e.type));});</script>
@@ -19,112 +25,230 @@
 <body>
   <div class="app-shell" id="app">
     <main class="screen timer-screen" id="tabata-view">
-      <header class="timer-top">
-        <button class="icon-button" id="open-ajustes" type="button" aria-label="Abrir Ajustes">⚙</button>
-        <button class="workout-title" id="treino-atual" type="button">SPARRING <small>55:25</small></button>
-        <button class="icon-button" id="reset-timer" type="button" aria-label="Reiniciar">↻</button>
+      <header class="timer-top timer-top-tabata">
+        <div class="timer-head-leading">
+          <button class="icon-button" id="open-ajustes" type="button" aria-label="Abrir ajustes"><svg viewBox="0 0 32 32" aria-hidden="true"><g fill="currentColor"><circle cx="16" cy="16" r="10.5"/><rect x="12.5" y="0.8" width="7" height="11" rx="2.2"/><rect x="12.5" y="0.8" width="7" height="11" rx="2.2" transform="rotate(45 16 16)"/><rect x="12.5" y="0.8" width="7" height="11" rx="2.2" transform="rotate(90 16 16)"/><rect x="12.5" y="0.8" width="7" height="11" rx="2.2" transform="rotate(135 16 16)"/><rect x="12.5" y="0.8" width="7" height="11" rx="2.2" transform="rotate(180 16 16)"/><rect x="12.5" y="0.8" width="7" height="11" rx="2.2" transform="rotate(225 16 16)"/><rect x="12.5" y="0.8" width="7" height="11" rx="2.2" transform="rotate(270 16 16)"/><rect x="12.5" y="0.8" width="7" height="11" rx="2.2" transform="rotate(315 16 16)"/></g><circle cx="16" cy="16" r="4.3" fill="none" stroke="var(--surface)" stroke-width="3.6"/><circle cx="16" cy="16" r="4.3" fill="none" stroke="currentColor" stroke-width="1.6"/></svg></button>
+        </div>
+        <span class="workout-title">
+          <span class="brand-lockup"><svg viewBox="0 0 32 32" aria-hidden="true"><circle cx="16" cy="17" r="11"/><path d="M16 10v7l5 3M12 2h8M23 6l2-2"/></svg><span class="brand-wordmark">OSS TIMER</span></span>
+          <small><span id="workout-name">SPARRING</span><span aria-hidden="true"> · </span><span id="workout-total">55:25</span></small>
+        </span>
+        <div class="timer-head-trailing">
+          <button class="icon-button" id="configurar-sparring" type="button" aria-label="Configurar treino Sparring"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h10M18 7h2M4 17h2m4 0h10"/><circle cx="16" cy="7" r="2"/><circle cx="8" cy="17" r="2"/></svg></button>
+        </div>
       </header>
       <section class="phase-panel" id="phase-panel">
+        <span class="phase-eyebrow">Fase atual</span>
         <div class="phase-name" id="phase-name">Preparar</div>
+        <button class="icon-button phase-reset" id="reset-timer" type="button" aria-label="Reiniciar Sparring">↻</button>
         <div class="phase-time" id="timer-display" role="timer">00:10</div>
       </section>
-      <button class="next-phase" id="next-phase" type="button">
-        <span>Próxima</span><strong id="next-phase-name">Exercício</strong><b id="next-phase-time">05:00</b>
-      </button>
-      <div class="phase-nav">
-        <button id="previous-phase" type="button">Fase anterior</button>
-        <button id="skip-phase" type="button">Pular</button>
-      </div>
+      <section class="next-phase" id="next-phase">
+        <button class="phase-side-action" id="previous-phase" type="button" aria-label="Fase anterior"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10 5 3 12l7 7M4 12h16"/></svg></button>
+        <div class="next-phase-content">
+          <span class="next-phase-label">Próxima fase</span>
+          <div class="next-phase-details"><strong id="next-phase-name">Exercício</strong><b id="next-phase-time">05:00</b></div>
+        </div>
+        <button class="phase-side-action" id="skip-phase" type="button" aria-label="Pular fase"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5v14l11-7zM20 5v14"/></svg></button>
+      </section>
       <section class="timer-controls">
-        <div class="remaining"><strong id="rounds-left">10</strong><span>Rondas restantes</span></div>
-        <button class="main-action" id="toggle-timer" type="button" aria-label="Iniciar"><svg class="main-action-icon play-icon" viewBox="0 0 64 64" aria-hidden="true"><path d="M25 14a5 5 0 0 1 7.5-4.4l21 18a5 5 0 0 1 0 8.8l-21 18A5 5 0 0 1 25 50Z"/></svg></button>
-        <div class="remaining"><strong id="cycles-left">1</strong><span>Ciclos restantes</span></div>
-        <span class="action-label" id="action-label">Iniciar</span>
+        <div class="remaining"><strong id="rounds-left">10</strong><span>Rondas para terminar</span></div>
+        <button class="main-action" id="toggle-timer" type="button" aria-label="Iniciar"><svg class="progress-ring" viewBox="0 0 100 100" aria-hidden="true"><circle class="progress-ring-track" cx="50" cy="50" r="44"></circle><circle class="progress-ring-value" cx="50" cy="50" r="44"></circle></svg><svg class="main-action-icon play-icon" viewBox="0 0 64 64" aria-hidden="true"><path d="M18 7C15.2 5.4 12 7.4 12 10.7v42.6c0 3.3 3.2 5.3 6 3.7l38-21.3c3-1.7 3-5.9 0-7.6L18 7Z"/></svg><span class="action-label" id="action-label">Iniciar</span></button>
+        <div class="remaining"><strong id="cycles-left">1</strong><span>Ciclos para terminar</span></div>
       </section>
     </main>
 
     <main class="screen timer-screen" id="rondas-view" hidden>
-      <header class="timer-top"><button class="workout-title" id="rondas-configurar" type="button">Rondas <small>25:05</small></button></header>
-      <section class="phase-panel" id="rondas-phase-panel"><div class="phase-name" id="rondas-phase-name">Preparar</div><div class="phase-time" id="rondas-display">00:05</div></section>
-      <button class="next-phase" id="rondas-next"><span>Próxima</span><strong id="rondas-next-name">Exercício</strong><b id="rondas-next-time">05:00</b></button>
+      <header class="timer-top">
+        <button class="icon-button" id="open-ajustes-rondas" type="button" aria-label="Abrir ajustes"><svg viewBox="0 0 32 32" aria-hidden="true"><g fill="currentColor"><circle cx="16" cy="16" r="10.5"/><rect x="12.5" y="0.8" width="7" height="11" rx="2.2"/><rect x="12.5" y="0.8" width="7" height="11" rx="2.2" transform="rotate(45 16 16)"/><rect x="12.5" y="0.8" width="7" height="11" rx="2.2" transform="rotate(90 16 16)"/><rect x="12.5" y="0.8" width="7" height="11" rx="2.2" transform="rotate(135 16 16)"/><rect x="12.5" y="0.8" width="7" height="11" rx="2.2" transform="rotate(180 16 16)"/><rect x="12.5" y="0.8" width="7" height="11" rx="2.2" transform="rotate(225 16 16)"/><rect x="12.5" y="0.8" width="7" height="11" rx="2.2" transform="rotate(270 16 16)"/><rect x="12.5" y="0.8" width="7" height="11" rx="2.2" transform="rotate(315 16 16)"/></g><circle cx="16" cy="16" r="4.3" fill="none" stroke="var(--surface)" stroke-width="3.6"/><circle cx="16" cy="16" r="4.3" fill="none" stroke="currentColor" stroke-width="1.6"/></svg></button>
+        <button class="workout-title" id="rondas-configurar" type="button">
+          <span class="brand-lockup"><svg viewBox="0 0 32 32" aria-hidden="true"><circle cx="16" cy="17" r="11"/><path d="M16 10v7l5 3M12 2h8M23 6l2-2"/></svg><span class="brand-wordmark">OSS TIMER</span></span>
+          <small>RONDAS<span aria-hidden="true"> · </span><span id="rondas-total">25:05</span></small>
+        </button>
+        <button class="icon-button" id="rondas-reset" type="button" aria-label="Reiniciar rondas">↻</button>
+      </header>
+      <section class="phase-panel" id="rondas-phase-panel"><span class="phase-eyebrow">Fase atual</span><div class="phase-name" id="rondas-phase-name">Preparar</div><div class="phase-time" id="rondas-display">00:05</div></section>
+      <section class="next-phase" id="rondas-next"><span class="next-phase-label">Próxima fase</span><div class="next-phase-details"><strong id="rondas-next-name">Exercício</strong><b id="rondas-next-time">05:00</b></div></section>
       <section class="timer-controls rondas-controls">
-        <div class="remaining"><strong id="rondas-left">5</strong><span>Rondas restantes</span></div>
-        <button class="main-action" id="rondas-toggle" type="button" aria-label="Iniciar"><svg class="main-action-icon play-icon" viewBox="0 0 64 64" aria-hidden="true"><path d="M25 14a5 5 0 0 1 7.5-4.4l21 18a5 5 0 0 1 0 8.8l-21 18A5 5 0 0 1 25 50Z"/></svg></button>
-        <button class="round-reset" id="rondas-reset" type="button">↻</button>
-        <span class="action-label" id="rondas-action-label">Iniciar</span>
+        <div class="remaining"><strong id="rondas-left">5</strong><span>Rondas para terminar</span></div>
+        <button class="main-action" id="rondas-toggle" type="button" aria-label="Iniciar"><svg class="progress-ring" viewBox="0 0 100 100" aria-hidden="true"><circle class="progress-ring-track" cx="50" cy="50" r="44"></circle><circle class="progress-ring-value" cx="50" cy="50" r="44"></circle></svg><svg class="main-action-icon play-icon" viewBox="0 0 64 64" aria-hidden="true"><path d="M18 7C15.2 5.4 12 7.4 12 10.7v42.6c0 3.3 3.2 5.3 6 3.7l38-21.3c3-1.7 3-5.9 0-7.6L18 7Z"/></svg><span class="action-label" id="rondas-action-label">Iniciar</span></button>
       </section>
     </main>
 
     <main class="screen timer-screen" id="cronometro-view" hidden>
-      <header class="timer-top"><span class="workout-title">Cronômetro</span><button class="icon-button" id="livre-reset" type="button" aria-label="Reiniciar">↻</button></header>
-      <section class="phase-panel chronometer-panel"><div class="phase-name">Cronômetro</div><div class="phase-time" id="livre-tempo">00:00</div></section>
-      <div class="next-phase"><span>Volta</span><strong id="livre-volta">—</strong></div>
-      <section class="timer-controls chrono-controls"><button class="main-action" id="livre-toggle" type="button" aria-label="Iniciar"><svg class="main-action-icon play-icon" viewBox="0 0 64 64" aria-hidden="true"><path d="M25 14a5 5 0 0 1 7.5-4.4l21 18a5 5 0 0 1 0 8.8l-21 18A5 5 0 0 1 25 50Z"/></svg></button><span class="action-label" id="livre-action-label">Iniciar</span></section>
+      <header class="timer-top">
+        <button class="icon-button" id="open-ajustes-crono" type="button" aria-label="Abrir ajustes"><svg viewBox="0 0 32 32" aria-hidden="true"><g fill="currentColor"><circle cx="16" cy="16" r="10.5"/><rect x="12.5" y="0.8" width="7" height="11" rx="2.2"/><rect x="12.5" y="0.8" width="7" height="11" rx="2.2" transform="rotate(45 16 16)"/><rect x="12.5" y="0.8" width="7" height="11" rx="2.2" transform="rotate(90 16 16)"/><rect x="12.5" y="0.8" width="7" height="11" rx="2.2" transform="rotate(135 16 16)"/><rect x="12.5" y="0.8" width="7" height="11" rx="2.2" transform="rotate(180 16 16)"/><rect x="12.5" y="0.8" width="7" height="11" rx="2.2" transform="rotate(225 16 16)"/><rect x="12.5" y="0.8" width="7" height="11" rx="2.2" transform="rotate(270 16 16)"/><rect x="12.5" y="0.8" width="7" height="11" rx="2.2" transform="rotate(315 16 16)"/></g><circle cx="16" cy="16" r="4.3" fill="none" stroke="var(--surface)" stroke-width="3.6"/><circle cx="16" cy="16" r="4.3" fill="none" stroke="currentColor" stroke-width="1.6"/></svg></button>
+        <span class="workout-title">
+          <span class="brand-lockup"><svg viewBox="0 0 32 32" aria-hidden="true"><circle cx="16" cy="17" r="11"/><path d="M16 10v7l5 3M12 2h8M23 6l2-2"/></svg><span class="brand-wordmark">OSS TIMER</span></span>
+          <small>CRONÔMETRO</small>
+        </span>
+        <button class="icon-button" id="livre-reset" type="button" aria-label="Reiniciar">↻</button>
+      </header>
+      <section class="phase-panel chronometer-panel"><span class="phase-eyebrow">Tempo decorrido</span><div class="phase-name">Cronômetro</div><div class="phase-time" id="livre-tempo">00:00</div></section>
+      <section class="next-phase chrono-laps">
+        <div class="latest-lap"><span>Última volta</span><strong id="livre-volta">—</strong></div>
+        <button id="marcar-volta" type="button" disabled>Marcar volta</button>
+        <ol id="livre-lista-voltas" aria-label="Voltas recentes"></ol>
+      </section>
+      <section class="timer-controls chrono-controls"><button class="main-action" id="livre-toggle" type="button" aria-label="Iniciar"><svg class="main-action-icon play-icon" viewBox="0 0 64 64" aria-hidden="true"><path d="M18 7C15.2 5.4 12 7.4 12 10.7v42.6c0 3.3 3.2 5.3 6 3.7l38-21.3c3-1.7 3-5.9 0-7.6L18 7Z"/></svg><span class="action-label" id="livre-action-label">Iniciar</span></button></section>
     </main>
 
     <main class="screen" id="mais-view" hidden>
-      <h1>Mais</h1>
+      <header class="page-heading"><span class="brand-wordmark">OSS TIMER</span><h1>Mais</h1><p>Seu treino, seu ritmo.</p></header>
       <nav class="more-list">
-        <button data-panel="historico" type="button"><span>Histórico</span><b>›</b></button>
-        <button data-panel="backup" type="button"><span>Backup</span><b>›</b></button>
         <button data-panel="sobre" type="button"><span>Sobre</span><b>›</b></button>
         <button data-panel="politica" type="button"><span>Política de Privacidade</span><b>›</b></button>
       </nav>
-      <p class="screen-version">Versão <span id="more-version">0.9.0</span></p>
+      <section class="version-card" aria-label="Versão do aplicativo">
+        <span class="version-mark" aria-hidden="true">OSS</span>
+        <span class="version-copy"><small>OSS TIMER · PWA</small><strong>Versão <span id="more-version">0.9.34</span></strong></span>
+        <span class="version-status">ATUAL</span>
+      </section>
     </main>
   </div>
 
-  <nav class="tab-bar" aria-label="Navegação principal">
-    <button class="tab-button active" data-tab="tabata-view" type="button"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8"/><path d="M12 7v5l3 2"/></svg><span>Tabata</span></button>
-    <button class="tab-button" data-tab="rondas-view" type="button"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12a7 7 0 1 0 2-5M5 3v5h5"/></svg><span>Rondas</span></button>
-    <button class="tab-button" data-tab="cronometro-view" type="button"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="13" r="7"/><path d="M9 3h6"/></svg><span>Cronômetro</span></button>
-    <button class="tab-button" data-tab="mais-view" type="button"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="5" cy="12" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/></svg><span>Mais</span></button>
+  <nav class="tab-bar" role="tablist" aria-label="Navegação principal">
+    <button class="tab-button active" data-tab="tabata-view" type="button" role="tab" aria-selected="true"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8"/><path d="M12 7v5l3 2"/></svg><span>Tabata</span></button>
+    <button class="tab-button" data-tab="rondas-view" type="button" role="tab" aria-selected="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12a7 7 0 1 0 2-5M5 3v5h5"/></svg><span>Rondas</span></button>
+    <button class="tab-button" data-tab="cronometro-view" type="button" role="tab" aria-selected="false"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="13" r="7"/><path d="M9 3h6"/></svg><span>Cronômetro</span></button>
+    <button class="tab-button" data-tab="mais-view" type="button" role="tab" aria-selected="false"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="5" cy="12" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/></svg><span>Mais</span></button>
   </nav>
   <output id="layout-medicao" hidden></output>
 
   <section class="modal" id="ajustes-panel" hidden>
-    <header class="modal-header"><span></span><h1>Ajustes</h1><button data-close="ajustes-panel" type="button">Concluído</button></header>
-    <div class="modal-content">
-      <label class="toggle-row"><span><strong>Voz</strong><small>Ouvir instruções de cada fase</small></span><input id="ajuste-voz" type="checkbox"></label>
-      <label class="toggle-row"><span><strong>Bipes</strong><small>Reproduzir sinais sonoros</small></span><input id="ajuste-bipes" type="checkbox"></label>
-      <label class="toggle-row"><span><strong>Tela sempre ligada</strong><small>Manter o aparelho ativo durante o treino</small></span><input id="ajuste-wake" type="checkbox"></label>
-      <label>Voz em português<select id="voz-selecao"></select></label>
-      <button id="testar-voz" type="button">Testar voz</button>
-      <p id="status-voz" role="status" aria-live="polite">Voz: indisponível</p>
-      <p class="settings-version">Versão <span id="ajustes-version"></span></p>
+    <header class="modal-header settings-header"><span></span><h1>Ajustes</h1><button data-close="ajustes-panel" type="button">Concluído</button></header>
+    <div class="modal-content settings-content">
+      <section class="settings-intro">
+        <span class="settings-intro-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 6h7m4 0h5M4 12h3m4 0h9M4 18h9m4 0h3"/><circle cx="13" cy="6" r="2"/><circle cx="9" cy="12" r="2"/><circle cx="15" cy="18" r="2"/></svg></span>
+        <span><strong>Treine do seu jeito</strong><small>Personalize os avisos e a experiência do timer.</small></span>
+      </section>
+      <section class="settings-group" aria-labelledby="settings-audio-title">
+        <h2 id="settings-audio-title">Áudio e orientação</h2>
+        <label class="toggle-row"><span><strong>Instruções por voz</strong><small>Ouça as fases e os avisos do treino</small></span><input id="ajuste-voz" type="checkbox"></label>
+        <label class="toggle-row"><span><strong>Sinais sonoros</strong><small>Bipes e alertas durante o treino</small></span><input id="ajuste-bipes" type="checkbox"></label>
+        <div class="voice-controls">
+          <label class="settings-field" for="voz-selecao"><span>Voz em português</span><select id="voz-selecao"></select></label>
+          <button class="voice-test" id="testar-voz" type="button"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M11 5 6 9H3v6h3l5 4V5Z"/><path d="M15 9a5 5 0 0 1 0 6m3-9a9 9 0 0 1 0 12"/></svg><span>Testar voz</span></button>
+          <p id="status-voz" class="voice-status" role="status" aria-live="polite">Voz: indisponível</p>
+        </div>
+      </section>
+      <section class="settings-group" aria-labelledby="settings-screen-title">
+        <h2 id="settings-screen-title">Durante o treino</h2>
+        <label class="toggle-row"><span><strong>Tela sempre ligada</strong><small>Evite que o aparelho bloqueie durante o timer</small></span><input id="ajuste-wake" type="checkbox"></label>
+      </section>
+      <footer class="settings-footer">
+        <span class="settings-brand">OSS TIMER</span>
+        <span class="settings-version">v<span id="ajustes-version"></span></span>
+      </footer>
     </div>
   </section>
 
   <section class="modal" id="editor-panel" hidden>
-    <header class="modal-header"><button data-close="editor-panel" type="button">Cancelar</button><h1>Treino</h1><button id="salvar-treino" type="button">Guardar</button></header>
-    <div class="modal-content">
-      <label>Nome do treino<input id="editor-nome" maxlength="40"></label>
-      <div id="editor-intervalos" class="interval-list"></div>
-      <button id="novo-treino" type="button">Adicionar novo treino</button>
-      <h2>Os meus treinos</h2><div id="treino-lista"></div>
-      <p id="editor-status" role="status" aria-live="polite"></p>
+    <header class="modal-header editor-header">
+      <button data-close="editor-panel" type="button">Cancelar</button>
+      <span class="editor-heading"><h1 id="editor-titulo">Ajustar Sparring</h1><small id="editor-contexto">CONFIGURAÇÃO DO TREINO</small></span>
+      <button id="concluir-editor" type="button">Concluído</button>
+    </header>
+    <div class="modal-content editor-content">
+      <section class="editor-hero">
+        <span class="editor-hero-mark" aria-hidden="true"><svg viewBox="0 0 32 32"><circle cx="16" cy="16" r="11"/><path d="M16 9v7l5 3M11 3h10"/></svg></span>
+        <span><strong id="editor-hero-title">Ajuste o treino no seu ritmo</strong><small id="editor-hero-copy">Tempos, pausas e rounds em um só lugar.</small></span>
+      </section>
+      <label class="editor-name-card" id="editor-name-field">
+        <span><strong>Nome do treino</strong></span>
+        <input id="editor-nome" maxlength="40" autocomplete="off" aria-label="Nome do treino">
+      </label>
+      <section class="editor-fast-setup" id="editor-fast-setup" aria-labelledby="editor-fast-title">
+        <div class="editor-section-heading"><span><small>AJUSTES PRINCIPAIS</small><h2 id="editor-fast-title">Tempo e rounds</h2></span></div>
+        <div class="editor-fast-grid">
+          <section class="editor-fast-card" aria-labelledby="editor-fast-duration-title">
+            <div class="editor-fast-card-heading"><span class="fast-card-icon" aria-hidden="true">◷</span><span><small>DURAÇÃO DE CADA ROUND</small><strong id="editor-fast-duration-title">Tempo de luta</strong></span></div>
+            <div id="editor-fast-duration" class="editor-fast-field"></div>
+            <div class="editor-presets" aria-label="Atalhos de duração">
+              <button type="button" data-quick-field="exercicio" data-quick-value="180" aria-pressed="false">3 min</button>
+              <button type="button" data-quick-field="exercicio" data-quick-value="300" aria-pressed="false">5 min</button>
+              <button type="button" data-quick-field="exercicio" data-quick-value="360" aria-pressed="false">6 min</button>
+              <button type="button" data-quick-field="exercicio" data-quick-value="480" aria-pressed="false">8 min</button>
+            </div>
+          </section>
+          <section class="editor-fast-card" aria-labelledby="editor-fast-rounds-title">
+            <div class="editor-fast-card-heading"><span class="fast-card-icon fast-card-icon--rounds" aria-hidden="true">↻</span><span><small>VOLUME DO TREINO</small><strong id="editor-fast-rounds-title">Quantidade de rounds</strong></span></div>
+            <div id="editor-fast-rounds" class="editor-fast-field"></div>
+            <div class="editor-presets" aria-label="Atalhos de quantidade de rounds">
+              <button type="button" data-quick-field="rondas" data-quick-value="3" aria-pressed="false">3</button>
+              <button type="button" data-quick-field="rondas" data-quick-value="5" aria-pressed="false">5</button>
+              <button type="button" data-quick-field="rondas" data-quick-value="10" aria-pressed="false">10</button>
+            </div>
+          </section>
+        </div>
+      </section>
+      <section class="editor-summary" aria-label="Resumo do treino">
+        <div class="editor-metric"><small>DURAÇÃO TOTAL</small><strong id="editor-total">55:25</strong></div>
+        <div class="editor-metric"><small>ROUNDS</small><strong id="editor-rounds-summary">10</strong></div>
+        <div class="editor-metric"><small>CICLOS</small><strong id="editor-cycles-summary">1</strong></div>
+        <p id="editor-preview-note" aria-live="polite">Inclui preparação, pausas e relaxamento.</p>
+      </section>
+      <section class="editor-timing" id="editor-advanced">
+        <div class="editor-section-heading"><span><small>PERSONALIZE O RITMO</small><h2>Preparação e intervalos</h2></span></div>
+        <div id="editor-intervalos" class="interval-list"></div>
+      </section>
+      <section class="editor-library" id="editor-library">
+        <div class="editor-section-heading"><span><small>SUA BIBLIOTECA</small><h2>Treinos salvos</h2></span></div>
+        <button id="novo-treino" class="editor-new-workout" type="button"><span aria-hidden="true">＋</span><span><strong>Criar novo treino</strong><small>Comece com os tempos deste treino</small></span></button>
+        <div id="treino-lista" role="group" aria-label="Selecionar treino"></div>
+      </section>
+      <p id="editor-status" class="editor-status" role="status" aria-live="polite"></p>
     </div>
   </section>
 
-  <section class="modal" id="historico-panel" hidden>
-    <header class="modal-header"><span></span><h1>Histórico</h1><button data-close="historico-panel" type="button">Concluído</button></header>
-    <div class="modal-content"><div id="historico-lista"></div><button id="historico-limpar" type="button">Limpar tudo</button><p id="historico-status" role="status" aria-live="polite"></p></div>
-  </section>
-  <section class="modal" id="backup-panel" hidden>
-    <header class="modal-header"><span></span><h1>Backup</h1><button data-close="backup-panel" type="button">Concluído</button></header>
-    <div class="modal-content">
-      <button id="exportar-json" type="button">Exportar JSON</button><button id="copiar-json" type="button">Copiar JSON</button>
-      <label class="file-button" for="importar-json">Importar JSON</label><input id="importar-json" type="file" accept=".json,application/json">
-      <p id="storage-mensagem" role="status" aria-live="polite"></p>
-    </div>
-  </section>
   <section class="modal" id="sobre-panel" hidden>
     <header class="modal-header"><span></span><h1>Sobre</h1><button data-close="sobre-panel" type="button">Concluído</button></header>
-    <div class="modal-content logo-page"><svg viewBox="0 0 160 160"><circle cx="80" cy="80" r="54" fill="none" stroke="#19C37D" stroke-width="9"/><rect x="14" y="68" width="132" height="24" rx="12" fill="#F5F7FA"/><path d="M98 68h42v24H98z" fill="#343A44"/><path d="M104 68h4v24h-4zm9 0h4v24h-4zm9 0h4v24h-4zm9 0h4v24h-4z" fill="#F5F7FA"/></svg><img class="about-photo" src="photos/foto-sobre.jpg" alt="Foto de treino de jiu-jitsu"><h2>Oss Timer</h2><p>Desenvolvido por Aylton</p><p>Versão <span class="about-version">0.9.0</span></p><a href="https://github.com/Dev-Aylton" target="_blank" rel="noopener noreferrer">GitHub</a></div>
+    <div class="modal-content about-page">
+      <div class="about-hero">
+        <img class="about-photo" src="photos/foto-sobre.jpg" alt="Treino de jiu-jitsu">
+        <span class="about-photo-caption">FOCO · DISCIPLINA · EVOLUÇÃO</span>
+      </div>
+      <div class="about-intro">
+        <span class="about-eyebrow">SEU TREINO. SEU RITMO.</span>
+        <h2>OSS TIMER</h2>
+        <p>Um timer feito para acompanhar cada round, cada pausa e cada etapa da sua evolução no tatame.</p>
+      </div>
+      <div class="about-version-card">
+        <span class="version-mark" aria-hidden="true">OSS</span>
+        <span><small>VERSÃO DO APLICATIVO</small><strong>v<span class="about-version">0.9.34</span></strong></span>
+        <span class="version-status">PWA</span>
+      </div>
+      <div class="about-creator">
+        <span class="creator-label">DESENVOLVIDO POR</span>
+        <strong>Aylton Alberto</strong>
+        <a href="https://github.com/Dev-Aylton" target="_blank" rel="noopener noreferrer">Conheça o projeto no GitHub <span aria-hidden="true">↗</span></a>
+      </div>
+      <svg class="about-emblem" viewBox="0 0 160 160" role="img" aria-label="Símbolo OSS Timer">
+        <circle cx="80" cy="80" r="54" fill="none" stroke="currentColor" stroke-width="9"/>
+        <rect x="14" y="68" width="132" height="24" rx="12" fill="#F5F7FA"/>
+        <path d="M98 68h42v24H98z" fill="#343A44"/>
+        <path d="M104 68h4v24h-4zm9 0h4v24h-4zm9 0h4v24h-4zm9 0h4v24h-4z" fill="#F5F7FA"/>
+      </svg>
+    </div>
   </section>
   <section class="modal" id="politica-panel" hidden>
     <header class="modal-header"><span></span><h1>Política de Privacidade</h1><button data-close="politica-panel" type="button">Concluído</button></header>
-    <div class="modal-content"><p>O Oss Timer guarda apenas no aparelho os ajustes, os treinos e o histórico de até 200 treinos concluídos, usando as chaves locais oss-timer.treinos.v1, oss-timer.ajustes.v2, oss-timer.ajustes.v1 (legada), oss-timer.historico.v1 e oss-timer.rondas.v1.</p><p>A foto exibida na tela Sobre faz parte deste aplicativo e não é enviada para lugar nenhum.</p><p>Arquivos e recursos podem ficar armazenados pelo cache do navegador para funcionamento offline. Não há conta, analytics nem envio de dados a servidor. Para apagar os dados, limpe os dados do site no navegador ou remova o aplicativo.</p><a href="https://github.com/Dev-Aylton" target="_blank" rel="noopener noreferrer">GitHub</a></div>
+    <div class="modal-content privacy-policy">
+      <p class="policy-updated">Última atualização: 4 de novembro de 2026</p>
+      <p>Esta política explica, em linguagem simples, como o OSS Timer trata informações quando você usa o aplicativo.</p>
+      <h2>Dados que ficam no seu aparelho</h2>
+      <p>Os treinos personalizados, a configuração de rondas e suas preferências (voz, bipes e tela ativa) são guardados no armazenamento local do navegador. Esses dados servem para manter suas configurações entre usos; não são enviados pelo aplicativo para um servidor.</p>
+      <h2>Dados que não coletamos</h2>
+      <p>O OSS Timer não solicita cadastro, nome, e-mail ou localização e não utiliza anúncios, cookies de rastreamento ou ferramentas de análise de uso. O cronômetro e as voltas funcionam no próprio aparelho.</p>
+      <h2>Áudio e voz</h2>
+      <p>Quando habilitados, os sinais sonoros são gerados no aparelho. A leitura por voz usa os recursos de síntese de fala disponíveis no navegador ou sistema operacional; a disponibilidade e o processamento de voz dependem da plataforma escolhida pelo usuário.</p>
+      <h2>Funcionamento offline e serviços externos</h2>
+      <p>O navegador pode guardar os arquivos do aplicativo em cache para permitir o uso offline e atualizar esses arquivos quando houver conexão. O aplicativo não transmite seus treinos ou preferências durante esse processo. O link para o GitHub só é acessado se você escolher abri-lo e, nesse caso, valem também as políticas do serviço externo.</p>
+      <h2>Controle e exclusão</h2>
+      <p>Você pode apagar os treinos e preferências removendo os dados do site nas configurações do navegador. Desinstalar o atalho PWA, por si só, pode não apagar os dados guardados pelo navegador. Registros de histórico criados em versões anteriores podem permanecer localmente até que os dados do site sejam removidos; a versão atual não mostra nem cria novos registros de histórico.</p>
+      <h2>Alterações e contato</h2>
+      <p>Esta política pode ser atualizada junto com o aplicativo. Para consultar o projeto, acesse o <a href="https://github.com/Dev-Aylton" target="_blank" rel="noopener noreferrer">GitHub do OSS Timer</a>.</p>
+    </div>
   </section>
 </body>
 </html>

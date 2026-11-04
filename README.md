@@ -1,26 +1,82 @@
-# Oss Timer
+# OSS TIMER
 
-Timer de treino de jiu-jitsu em PWA, versão 0.9.0. Possui as abas Tabata, Rondas, Cronômetro e Mais, editor de treinos, histórico limitado a 200 treinos concluídos, backup JSON, Ajustes, voz em português, bipes, tela sempre ligada, logos locais e Política de Privacidade.
+<p align="center">
+  <img src="icons/apple-touch-icon.png" alt="Ícone OSS Timer" width="144"><br>
+  <strong>Seu treino. Seu ritmo.</strong><br>
+  Timer de treino para jiu-jitsu, rounds e intervalos.
+</p>
 
-Funciona com HTML, CSS e JavaScript puros e pode ser usado offline pelo service worker.
+<p align="center">
+  <img alt="Versão 0.9.34" src="https://img.shields.io/badge/vers%C3%A3o-0.9.34-8dff3d?style=for-the-badge&labelColor=101512">
+  <img alt="PWA instalável" src="https://img.shields.io/badge/PWA-instal%C3%A1vel-32d27a?style=for-the-badge&labelColor=101512">
+  <img alt="60 testes" src="https://img.shields.io/badge/testes-60%20aprovados-f5ff27?style=for-the-badge&labelColor=101512">
+</p>
+
+O **OSS Timer** é um aplicativo web progressivo (PWA) feito para acompanhar o ritmo do treino sem tirar o foco da luta. A interface de alto contraste destaca a fase atual, o tempo restante e o que vem a seguir. Instale no celular ou use no navegador — inclusive offline, depois de carregar o app.
+
+## Modos de treino
+
+| Tabata | Rondas | Cronômetro |
+|:---|:---|:---|
+| Crie sessões intervaladas com fases, rounds, ciclos e descanso. | Configure um timer dedicado para rounds de luta. | Acompanhe o tempo livre e registre voltas. |
+
+## Recursos
+
+- **Tabata e treinos personalizados** — todos os ajustes permanecem visíveis, com atalhos para tempo de luta e rounds e prévia da duração total.
+- **Timer de rondas** — mantenha uma configuração de rounds separada do treino Tabata.
+- **Cronômetro livre** — acompanhe o tempo e registre voltas.
+- **Sinais durante o treino** — bipes, avisos por voz em português e contagem regressiva.
+- **Sessão sem interrupções** — opção para manter a tela ligada durante o treino.
+- **Pronto para instalar** — PWA com cache offline, ícone OSS Timer otimizado para a tela inicial do iPhone e layout para celular.
+
+## Começar
+
+### Usar no navegador
+
+Abra `index.html` para experimentar o aplicativo. Para testar a instalação e os recursos de PWA, publique os arquivos em uma origem HTTPS ou rode um servidor local:
+
+```bash
+python -m http.server 8000
+```
+
+Depois, acesse [http://localhost:8000](http://localhost:8000).
+
+### Instalar
+
+Publique o app em um endereço HTTPS. No iPhone, abra esse endereço no **Safari**, toque em **Compartilhar** e escolha **Adicionar à Tela de Início**. O ícone da tela inicial usa uma imagem dedicada de 180 × 180 pixels, com fundo opaco e contraste ajustado para o recorte arredondado do iOS. Depois de carregar o app, o cache permite continuar usando-o offline.
+
+Em outros navegadores compatíveis, use **Instalar aplicativo** ou **Adicionar à tela inicial**. O manifesto inclui ícones de 192 e 512 pixels, com o maior preparado também para máscaras de ícones. O layout reserva as áreas seguras do iPhone (notch/Dynamic Island e indicador de início), acompanha a altura dinâmica do navegador e reorganiza os controles em paisagem.
+
+O arquivo vetorial de origem do ícone é [`icons/oss-timer-app-icon.svg`](icons/oss-timer-app-icon.svg); as imagens PNG usadas pelo app são exportadas desse desenho.
 
 ## Testes
 
-Abra `tests/test-runner.html` no navegador. A contagem atual é de 54 testes executados em JavaScript puro.
+Abra [`tests/test-runner.html`](tests/test-runner.html) no navegador para executar a suíte de testes JavaScript. O painel mostra os resultados, permite filtrar aprovados ou reprovados e pesquisar pelo nome ou mensagem.
 
-A medição visual simples está em `tests/dom-smoke.html`.
+Para validar os recursos do PWA e os arquivos locais:
 
-## Política
+```bash
+python tests/verificar-pwa.py
+```
 
-A [Política de Privacidade](https://github.com/Dev-Aylton/oss-timer/blob/main/README.md) descreve apenas os dados locais usados pelo app. O texto exibido no próprio app está disponível na tela Política de Privacidade.
+## Privacidade
 
-## Redeseno
+Treinos e preferências são armazenados localmente no aparelho. O app não exige conta e não envia esses dados para um servidor. A política completa está disponível em **Mais → Política de Privacidade**.
 
-- [x] Barra inferior com quatro abas
-- [x] Tabata com fases, rondas, ciclos e controles
-- [x] Editor de treinos
-- [x] Aba Rondas
-- [x] Cronometro reutilizando a logica do cronometro
-- [x] Ajustes, Sobre e foto local
-- [x] Politica de Privacidade
-- [x] Icones e service worker
+## Estrutura do projeto
+
+```text
+index.html           Aplicativo e estrutura das telas
+style.css            Identidade visual e layout responsivo
+app.js               Interface, interações e integração dos recursos
+app-ui.js            Apresentação e rótulos do timer
+timer-engine.js      Lógica de fases, rounds, ciclos e cronômetro
+storage.js           Persistência local de treinos e preferências
+audio.js / voice.js  Sinais sonoros e instruções por voz
+sw.js                Cache e funcionamento offline
+tests/               Página de testes e verificação do PWA
+```
+
+## Desenvolvimento
+
+O projeto usa HTML, CSS e JavaScript puros, sem etapa de build ou dependências de pacote. As configurações permanecem no dispositivo.

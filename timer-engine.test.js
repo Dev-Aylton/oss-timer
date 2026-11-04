@@ -323,6 +323,18 @@
       equal(timer.estado().status, "finalizado");
     });
 
+    it("reinicia o timer ao alternar depois de finalizado", function () {
+      var clock = relogioFalso();
+      var timer = new OssEngine.Timer(cfg({ exercicio: 2, rondas: 1 }), { now: clock.now });
+      timer.iniciar();
+      clock.avancar(2);
+      timer.tick();
+      equal(timer.estado().status, "finalizado");
+      timer.alternar();
+      equal(timer.estado().status, "rodando");
+      equal(timer.estado().restanteFase, 2);
+    });
+
     it("Cronometro conta preparação e registra voltas", function () {
       var clock = relogioFalso();
       var cronometro = new OssEngine.Cronometro({ preparar: 3 }, { now: clock.now });
@@ -344,17 +356,32 @@
     });
 
     it("usa a cor correspondente a cada fase", function () {
-      equal(OssView.corDaFase({ tipo: "preparar" }, 10), "#FFB020");
-      equal(OssView.corDaFase({ tipo: "exercicio" }, 31), "#19C37D");
-      equal(OssView.corDaFase({ tipo: "descanso" }, 35), "#E5484D");
-      equal(OssView.corDaFase({ tipo: "descansoCiclo" }, 35), "#3B82F6");
-      equal(OssView.corDaFase(null, 0, "finalizado"), "#C4B5FD");
+      equal(OssView.corDaFase({ tipo: "preparar" }, 10), "#FFF533");
+      equal(OssView.corDaFase({ tipo: "exercicio" }, 31), "#9DFF43");
+      equal(OssView.corDaFase({ tipo: "descanso" }, 35), "#F1372B");
+      equal(OssView.corDaFase({ tipo: "descansoCiclo" }, 35), "#FF9D43");
+      equal(OssView.corDaFase(null, 0, "finalizado"), "#D8D8D8");
+    });
+
+    it("calcula o progresso da fase para o anel do timer", function () {
+      equal(OssView.progressoFase({
+        status: "parado", fase: { dur: 10 }, restanteFase: 10
+      }), 0);
+      equal(OssView.progressoFase({
+        status: "rodando", fase: { dur: 10 }, restanteFase: 4
+      }), 0.6);
+      equal(OssView.progressoFase({
+        status: "rodando", fase: { dur: 10 }, restanteFase: 12
+      }), 0);
+      equal(OssView.progressoFase({
+        status: "finalizado", fase: null, restanteFase: 0
+      }), 1);
     });
 
     it("destaca laranja apenas nos últimos 30 segundos do exercício", function () {
-      equal(OssView.corDaFase({ tipo: "exercicio" }, 31), "#19C37D");
-      equal(OssView.corDaFase({ tipo: "exercicio" }, 30), "#FF7A1A");
-      equal(OssView.corDaFase({ tipo: "exercicio" }, 1), "#FF7A1A");
+      equal(OssView.corDaFase({ tipo: "exercicio" }, 31), "#9DFF43");
+      equal(OssView.corDaFase({ tipo: "exercicio" }, 30), "#FF9D43");
+      equal(OssView.corDaFase({ tipo: "exercicio" }, 1), "#FF9D43");
     });
 
     it("gera rótulos da fase, ronda e ciclo atuais", function () {
@@ -401,6 +428,19 @@
       equal(migrado.version, 1);
       equal(migrado.treinos.length, 1);
       equal(migrado.treinos[0].nome, "SPARRING");
+    });
+
+    it("migração não altera a entrada e gera IDs únicos para treinos sem ID", function () {
+      var entrada = {
+        version: 0,
+        treinoAtual: "inexistente",
+        treinos: [{ nome: "Um" }, { nome: "Dois" }]
+      };
+      var original = JSON.stringify(entrada);
+      var migrado = OssStorage.migrar(entrada);
+      equal(JSON.stringify(entrada), original);
+      assert(migrado.treinos[0].id !== migrado.treinos[1].id);
+      equal(migrado.treinoAtual, migrado.treinos[0].id);
     });
 
     it("rejeita JSON de importação inválido sem substituição", function () {
@@ -478,6 +518,23 @@
       equal(voz.name, "Luciana");
     });
 
+    it("usa Luciana como voz automática mesmo quando outra voz é padrão", function () {
+      var luciana = { name: "Luciana", lang: "pt-BR" };
+      var voz = OssVoice.resolverVozSelecionada(null, [
+        { name: "Maria", lang: "pt-BR", default: true },
+        luciana
+      ]);
+      equal(voz.name, "Luciana");
+    });
+
+    it("reconhece Luciana com identificador pt_BR", function () {
+      var voz = OssVoice.escolherVoz(null, [
+        { name: "Maria", lang: "pt-BR" },
+        { name: "Luciana", lang: "pt_BR" }
+      ]);
+      equal(voz.name, "Luciana");
+    });
+
     it("ordena vozes pt-BR primeiro, ignorando outros idiomas", function () {
       var voces = OssVoice.vozesPortuguese([
         { name: "Zelia", lang: "pt-PT" }, { name: "Ana", lang: "en-US" },
@@ -519,7 +576,7 @@
       equal(OssVoice.fraseEvento({ tipo: "fase", indice: 1, fase: { tipo: "exercicio", ciclo: 1, ronda: 1 } }), "Valendo");
       equal(OssVoice.fraseEvento({ tipo: "fase", indice: 3, fase: { tipo: "exercicio", ciclo: 1, ronda: 2 } }), "Round");
       equal(OssVoice.fraseEvento({ tipo: "fase", indice: 1, fase: { tipo: "descanso" } }), "Descanso");
-      equal(OssVoice.fraseEvento({ tipo: "fase", indice: 0, fase: { tipo: "preparar" } }), "Prepare-se");
+      equal(OssVoice.fraseEvento({ tipo: "fase", indice: 0, fase: { tipo: "preparar" } }), "Preparar");
     });
 
     it("fala Valendo apenas no início do treino e não repete nos rounds", function () {
@@ -532,7 +589,7 @@
       timer.iniciar();
       clock.avancar(7);
       timer.tick();
-      deepEqual(falas, ["Prepare-se", "Valendo", "Descanso", "Round"]);
+      deepEqual(falas, ["Preparar", "Valendo", "Descanso", "Round"]);
       equal(falas.filter(function (frase) { return frase === "Valendo"; }).length, 1);
     });
 
@@ -556,9 +613,10 @@
     });
 
     it("configuração inválida de Rondas usa o padrão seguro", function () {
-      var config = OssStorage.normalizarRondas({ preparar: -1, rondas: 0 });
+      var config = OssStorage.normalizarRondas({ preparar: -1, rondas: 0, exercicio: 86401 });
       equal(config.preparar, 5);
       equal(config.rondas, 5);
+      equal(config.exercicio, OssStorage.rondasPadrao().exercicio);
     });
 
     it("estado expõe rondas e ciclos restantes", function () {

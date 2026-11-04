@@ -2,25 +2,88 @@
 <html lang="pt-BR">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Testes do Oss Timer</title>
-  <style>
-    body { font: 16px system-ui, sans-serif; margin: 2rem auto; max-width: 48rem; padding: 0 1rem; }
-    .resumo { display: flex; gap: 1.5rem; font-weight: 700; }
-    .falha { color: #b42318; }
-    li { margin: .4rem 0; }
-    button { font: inherit; padding: .5rem .8rem; }
-  </style>
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#101512">
+  <meta name="description" content="Resultados dos testes do Oss Timer.">
+  <title>Testes — OSS Timer</title>
+  <link rel="icon" href="../icons/favicon.png" type="image/png">
+  <link rel="stylesheet" href="test-runner.css">
 </head>
 <body>
-  <h1>Testes do Oss Timer</h1>
-  <p class="resumo">
-    <span>Total: <span id="numTotal">0</span></span>
-    <span>Aprovados: <span id="numPass">0</span></span>
-    <span>Reprovados: <span id="numFail">0</span></span>
-  </p>
-  <button id="executar" type="button">Executar novamente</button>
-  <ol id="resultados"></ol>
+  <main class="test-app">
+    <header class="topbar">
+      <a class="brand" href="../index.html" aria-label="OSS Timer — voltar ao aplicativo">
+        <svg viewBox="0 0 32 32" aria-hidden="true"><circle cx="16" cy="17" r="11"/><path d="M16 10v7l5 3M12 2h8M23 6l2-2"/></svg>
+        <span>OSS <b>TIMER</b></span>
+      </a>
+      <a class="back-link" href="../index.html">Voltar ao app <span aria-hidden="true">↗</span></a>
+    </header>
+
+    <section class="intro" aria-labelledby="page-title">
+      <p class="eyebrow"><span class="status-dot" aria-hidden="true"></span> QUALIDADE DO PROJETO</p>
+      <h1 id="page-title">Central de <span>testes</span></h1>
+      <p class="intro-copy">Confira a lógica dos timers, as configurações e os recursos do OSS Timer.</p>
+      <div class="run-row">
+        <button id="executar" class="run-button" type="button">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 7v5h-5M4.9 9a7.5 7.5 0 0 1 12.6-2L20 12M4 17v-5h5m10.1 3a7.5 7.5 0 0 1-12.6 2L4 12"/></svg>
+          Executar testes novamente
+        </button>
+        <p id="status-execucao" class="run-status" role="status" aria-live="polite">Preparando testes…</p>
+      </div>
+    </section>
+
+    <section class="summary" aria-label="Resumo dos resultados">
+      <article class="summary-card summary-total">
+        <span class="summary-label">Casos verificados</span>
+        <strong id="numTotal">0</strong>
+        <span class="summary-note">no total</span>
+      </article>
+      <article class="summary-card summary-pass">
+        <span class="summary-label">Aprovados</span>
+        <strong id="numPass">0</strong>
+        <span class="summary-note">tudo certo</span>
+      </article>
+      <article class="summary-card summary-fail">
+        <span class="summary-label">Reprovados</span>
+        <strong id="numFail">0</strong>
+        <span class="summary-note">precisam de atenção</span>
+      </article>
+    </section>
+
+    <section class="results-panel" aria-labelledby="results-title">
+      <div class="results-heading">
+        <div>
+          <p class="eyebrow">RELATÓRIO</p>
+          <h2 id="results-title">Resultados da execução</h2>
+        </div>
+        <span id="duracao" class="duration">—</span>
+      </div>
+
+      <div class="progress-track" role="progressbar" aria-label="Proporção de testes aprovados" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+        <span id="barra-progresso"></span>
+      </div>
+
+      <div class="toolbar">
+        <div class="filters" role="group" aria-label="Filtrar resultados">
+          <button class="filter-button active" data-filtro="todos" type="button" aria-pressed="true">Todos <span id="filtro-total">0</span></button>
+          <button class="filter-button" data-filtro="aprovados" type="button" aria-pressed="false">Aprovados <span id="filtro-aprovados">0</span></button>
+          <button class="filter-button" data-filtro="reprovados" type="button" aria-pressed="false">Reprovados <span id="filtro-reprovados">0</span></button>
+        </div>
+        <label class="search">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.8" cy="10.8" r="6.8"/><path d="m16 16 5 5"/></svg>
+          <input id="busca" type="search" placeholder="Buscar teste…" autocomplete="off" aria-label="Buscar nos resultados">
+        </label>
+      </div>
+
+      <p id="estado-filtro" class="filter-empty" hidden>Nenhum resultado corresponde à busca.</p>
+      <ol id="resultados" class="results-list" aria-live="off"></ol>
+    </section>
+
+    <footer class="footer">
+      <span>OSS TIMER <span aria-hidden="true">·</span> Suíte de testes local</span>
+      <a href="../README.md">Documentação</a>
+    </footer>
+  </main>
   <script src="../timer-engine.js"></script>
   <script src="../app-ui.js"></script>
   <script src="../audio.js"></script>

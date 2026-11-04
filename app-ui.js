@@ -6,13 +6,19 @@
   }
 
   function corDaFase(fase, restante, status) {
-    if (status === "finalizado") return "#C4B5FD";
-    if (!fase) return "#0E1116";
-    if (fase.tipo === "preparar") return "#FFB020";
-    if (fase.tipo === "exercicio") return restante <= 30 ? "#FF7A1A" : "#19C37D";
-    if (fase.tipo === "descanso") return "#E5484D";
-    if (fase.tipo === "descansoCiclo") return "#3B82F6";
-    return "#0E1116";
+    if (status === "finalizado") return "#D8D8D8";
+    if (!fase) return "#FFF533";
+    if (fase.tipo === "preparar") return "#FFF533";
+    if (fase.tipo === "exercicio") return restante <= 30 ? "#FF9D43" : "#9DFF43";
+    if (fase.tipo === "descanso") return "#F1372B";
+    if (fase.tipo === "descansoCiclo") return "#FF9D43";
+    return "#FF9D43";
+  }
+
+  function progressoFase(estado) {
+    if (estado.status === "finalizado") return 1;
+    if (!estado.fase || !Number.isFinite(estado.fase.dur) || estado.fase.dur <= 0) return 0;
+    return Math.min(1, Math.max(0, (estado.fase.dur - estado.restanteFase) / estado.fase.dur));
   }
 
   function rotulos(estado, config) {
@@ -44,6 +50,7 @@
   root.OssView = {
     formatarTempo: formatarTempo,
     corDaFase: corDaFase,
+    progressoFase: progressoFase,
     rotulos: rotulos
   };
 }(typeof globalThis !== "undefined" ? globalThis : this));

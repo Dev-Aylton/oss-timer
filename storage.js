@@ -10,6 +10,7 @@
   var memoriaAjustes = null;
   var memoriaHistorico = null;
   var memoriaRondas = null;
+  var storageOk = true;
   var inteiros = ["preparar", "exercicio", "descanso", "rondas", "ciclos", "descansoCiclo", "relaxe", "avisoProximo"];
   var limites = {
     preparar: [0, 3600], exercicio: [0, 86400], descanso: [0, 86400],
@@ -69,17 +70,22 @@
   function migrar(dado) {
     if (!dado || typeof dado !== "object") return { version: 1, treinoAtual: "sparring", treinos: [treinoSparring()] };
     var lista = Array.isArray(dado.treinos) ? dado.treinos : [];
+    var ids = Object.create(null);
     lista = lista.map(function (treino, indice) {
       var normalizado = normalizar(treino);
-      if (!normalizado.id) normalizado.id = idNovo();
+      if (!treino || typeof treino !== "object" || typeof treino.id !== "string" ||
+          !treino.id || ids[normalizado.id]) {
+        normalizado.id = indice === 0 ? "sparring" : idNovo();
+      }
+      ids[normalizado.id] = true;
       if (indice === 0 && normalizado.nome === "") normalizado.nome = "Treino " + (indice + 1);
       return normalizado;
     });
     if (!lista.length) lista = [treinoSparring()];
-    if (!lista.some(function (treino) { return treino.id === dado.treinoAtual; })) {
-      dado.treinoAtual = lista[0].id;
-    }
-    return { version: 1, treinoAtual: dado.treinoAtual, treinos: lista };
+    var treinoAtual = lista.some(function (treino) { return treino.id === dado.treinoAtual; })
+      ? dado.treinoAtual
+      : lista[0].id;
+    return { version: 1, treinoAtual: treinoAtual, treinos: lista };
   }
 
   function ler() {
@@ -89,6 +95,8 @@
       if (!texto) memoria = { version: 1, treinoAtual: "sparring", treinos: [treinoSparring()] };
       else memoria = migrar(JSON.parse(texto));
     } catch (erro) {
+      storageOk = false;
+      console.warn("Não foi possível ler os treinos salvos; usando os padrões:", erro);
       memoria = { version: 1, treinoAtual: "sparring", treinos: [treinoSparring()] };
     }
     return memoria;
@@ -98,7 +106,11 @@
     memoria = migrar(dados);
     try {
       root.localStorage.setItem(CHAVE, JSON.stringify(memoria));
-    } catch (erro) {}
+      storageOk = true;
+    } catch (erro) {
+      storageOk = false;
+      console.warn("Não foi possível salvar os treinos neste dispositivo:", erro);
+    }
     return memoria;
   }
 
@@ -160,13 +172,25 @@
       var texto = root.localStorage.getItem(chave);
       return texto ? JSON.parse(texto) : padrao;
     } catch (erro) {
+      storageOk = false;
+      console.warn("Não foi possível ler as preferências salvas:", erro);
       return padrao;
     }
   }
 
   function salvarChave(chave, valor) {
-    try { root.localStorage.setItem(chave, JSON.stringify(valor)); } catch (erro) {}
+    try {
+      root.localStorage.setItem(chave, JSON.stringify(valor));
+      storageOk = true;
+    } catch (erro) {
+      storageOk = false;
+      console.warn("Não foi possível salvar os dados neste dispositivo:", erro);
+    }
     return valor;
+  }
+
+  function armazenamentoDisponivel() {
+    return storageOk;
   }
 
   function lerAjustes() {
@@ -203,8 +227,9 @@
     try {
       var candidato = Object.assign({}, base, dado || {});
       ["preparar","exercicio","descanso","rondas","ciclos","descansoCiclo","relaxe","avisoProximo"].forEach(function (campo) {
-        if (!Number.isInteger(candidato[campo]) || candidato[campo] < 0 ||
-            ((campo === "rondas" || campo === "ciclos") && candidato[campo] < 1)) {
+        var limite = limites[campo];
+        if (!Number.isInteger(candidato[campo]) || candidato[campo] < limite[0] ||
+            candidato[campo] > limite[1]) {
           candidato[campo] = base[campo];
         }
       });
@@ -213,7 +238,6 @@
       normalizado = normalizar(base);
     }
     normalizado.nome = "Rondas";
-    normalizado.rondas = normalizado.rondas;
     return normalizado;
   }
 
@@ -223,6 +247,7 @@
     try {
       memoriaRondas = valor ? normalizarRondas(valor) : rondasPadrao();
     } catch (erro) {
+      console.warn("Não foi possível ler as configurações de rondas:", erro);
       memoriaRondas = rondasPadrao();
     }
     return memoriaRondas;
@@ -230,7 +255,10 @@
 
   function salvarRondas(dado) {
     try { memoriaRondas = normalizarRondas(dado); }
-    catch (erro) { memoriaRondas = rondasPadrao(); }
+    catch (erro) {
+      console.warn("Configuração de rondas inválida; mantendo os padrões:", erro);
+      memoriaRondas = rondasPadrao();
+    }
     return salvarChave(CHAVE_RONDAS, memoriaRondas);
   }
 
@@ -246,15 +274,13 @@
   }
 
   function salvarHistorico(lista) {
-    memoriaHistorico = adicionarHistorico([], null).concat(Array.isArray(lista) ? lista.slice(0, 200) : []);
-    memoriaHistorico = memoriaHistorico.filter(function (item, indice, todos) {
-      return todos.indexOf(item) === indice;
-    }).slice(0, 200);
+    memoriaHistorico = Array.isArray(lista) ? lista.slice(0, 200) : [];
     return salvarChave(CHAVE_HISTORICO, memoriaHistorico);
   }
 
   function formatarDuracao(segundos) {
-    segundos = Math.max(0, Number(segundos) || 0);
+    segundos = Number(segundos);
+    segundos = Number.isFinite(segundos) ? Math.max(0, Math.floor(segundos)) : 0;
     var horas = Math.floor(segundos / 3600);
     var minutos = Math.floor((segundos % 3600) / 60);
     var resto = segundos % 60;
@@ -271,8 +297,11 @@
     ler: ler,
     salvar: salvar,
     validarImportacao: validarImportacao,
-    garantirNaoVazio: garantirNaoVazio
-    , CHAVE_AJUSTES: CHAVE_AJUSTES, CHAVE_AJUSTES_ANTIGA: CHAVE_AJUSTES_ANTIGA, CHAVE_HISTORICO: CHAVE_HISTORICO,
+    garantirNaoVazio: garantirNaoVazio,
+    armazenamentoDisponivel: armazenamentoDisponivel,
+    CHAVE_AJUSTES: CHAVE_AJUSTES,
+    CHAVE_AJUSTES_ANTIGA: CHAVE_AJUSTES_ANTIGA,
+    CHAVE_HISTORICO: CHAVE_HISTORICO,
     ajustesPadrao: ajustesPadrao, validarAjustes: validarAjustes,
     normalizarAjustes: normalizarAjustes, lerAjustes: lerAjustes, salvarAjustes: salvarAjustes,
     lerHistorico: lerHistorico, adicionarHistorico: adicionarHistorico,

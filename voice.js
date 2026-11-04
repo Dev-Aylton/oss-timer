@@ -2,7 +2,7 @@
   "use strict";
 
   var FALAS = {
-    fase: "Prepare-se",
+    fase: "Preparar",
     aviso30: "Trinta segundos",
     aviso10: "Últimos dez segundos",
     contagem: "Contagem",
@@ -16,10 +16,10 @@
       : []);
     if (!voces.length) return null;
     for (var i = 0; i < voces.length; i += 1) {
-      if (/pt-BR/i.test(voces[i].lang) && /Luciana/i.test(voces[i].name)) return voces[i];
+      if (/^pt[-_]br$/i.test(voces[i].lang) && /Luciana/i.test(voces[i].name)) return voces[i];
     }
     for (var j = 0; j < voces.length; j += 1) {
-      if (/pt-BR/i.test(voces[j].lang)) return voces[j];
+      if (/^pt[-_]br$/i.test(voces[j].lang)) return voces[j];
     }
     return vozPadrao && /^pt(?:-|$)/i.test(String(vozPadrao.lang || "")) ? vozPadrao : null;
   }

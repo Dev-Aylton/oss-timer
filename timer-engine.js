@@ -216,6 +216,7 @@
         emitir({ tipo: "retomada" });
         return this.estado();
       }
+      if (status === "finalizado") this.reset();
       return this.iniciar();
     };
 
