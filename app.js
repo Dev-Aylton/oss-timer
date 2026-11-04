@@ -1,6 +1,6 @@
 (function () {
   "use strict";
-  var APP_VERSION = "0.9.34";
+  var APP_VERSION = "0.9.35";
   var dados = OssStorage.ler();
   var treinoAtual = dados.treinos.filter(function (item) { return item.id === dados.treinoAtual; })[0] || dados.treinos[0];
   var config = OssStorage.normalizar(treinoAtual);
@@ -156,7 +156,27 @@
     document.getElementById("rondas-phase-name").textContent = estado.status === "finalizado" ? "Finalizado" : (estado.nomeFase || "Preparar");
     document.getElementById("rondas-display").textContent = OssView.formatarTempo(estado.restanteFase);
     document.getElementById("rondas-left").textContent = estado.status === "finalizado" ? 0 : estado.rondasParaTerminar;
-    document.getElementById("rondas-total").textContent = OssView.formatarTempo(duracaoRondas);
+    document.getElementById("rondas-total").textContent = OssView.formatarTempo(estado.restanteTotal);
+    var faseAtual = estado.fase;
+    var rondaAtual = faseAtual && faseAtual.ronda > 0 ? faseAtual.ronda : 1;
+    var cicloAtual = faseAtual && faseAtual.ciclo > 0 ? faseAtual.ciclo : 1;
+    if (faseAtual && faseAtual.tipo === "descanso" && faseAtual.ronda < rondasCfg.rondas) {
+      rondaAtual = faseAtual.ronda + 1;
+    } else if (faseAtual && faseAtual.tipo === "descansoCiclo") {
+      rondaAtual = 1;
+      cicloAtual = Math.min(rondasCfg.ciclos, faseAtual.ciclo + 1);
+    } else if (faseAtual && faseAtual.tipo === "relaxe") {
+      rondaAtual = rondasCfg.rondas;
+      cicloAtual = rondasCfg.ciclos;
+    }
+    if (estado.status === "finalizado") {
+      rondaAtual = rondasCfg.rondas;
+      cicloAtual = rondasCfg.ciclos;
+    }
+    document.getElementById("rondas-current").textContent = rondaAtual;
+    document.getElementById("rondas-count").textContent = rondasCfg.rondas;
+    document.getElementById("rondas-cycle-current").textContent = cicloAtual;
+    document.getElementById("rondas-cycle-count").textContent = rondasCfg.ciclos;
     renderizarBotaoPrincipal(document.getElementById("rondas-toggle"), estado, "rondas-action-label");
     var faixa = document.getElementById("rondas-next");
     faixa.hidden = !estado.proxima;
@@ -186,16 +206,40 @@
     document.getElementById("livre-tempo").textContent = formatarLivre(ms);
     renderizarBotaoPrincipal(document.getElementById("livre-toggle"), estadoLivre, "livre-action-label");
     var voltas = livre.voltas;
-    document.getElementById("livre-volta").textContent = voltas.length
-      ? formatarLivre(voltas[voltas.length - 1].duracao * 1000)
+    var ultimaVolta = voltas.length ? voltas[voltas.length - 1] : null;
+    document.getElementById("livre-volta").textContent = ultimaVolta
+      ? formatarLivre(ultimaVolta.duracao * 1000)
+      : "—";
+    document.getElementById("livre-volta-numero").textContent = ultimaVolta
+      ? "#" + ultimaVolta.numero
+      : "—";
+    document.getElementById("livre-volta-total").textContent = ultimaVolta
+      ? formatarLivre(ultimaVolta.total * 1000)
       : "—";
     var listaVoltas = document.getElementById("livre-lista-voltas");
     listaVoltas.textContent = "";
     voltas.slice(-3).reverse().forEach(function (volta) {
       var item = document.createElement("li");
-      item.textContent = "Volta " + volta.numero + " · " + formatarLivre(volta.duracao * 1000);
+      var numero = document.createElement("span");
+      numero.className = "lap-number";
+      numero.textContent = "Volta " + volta.numero;
+      var parcial = document.createElement("time");
+      parcial.className = "lap-split";
+      parcial.textContent = formatarLivre(volta.duracao * 1000);
+      var acumulado = document.createElement("span");
+      acumulado.className = "lap-total";
+      acumulado.textContent = "Total " + formatarLivre(volta.total * 1000);
+      item.appendChild(numero);
+      item.appendChild(parcial);
+      item.appendChild(acumulado);
       listaVoltas.appendChild(item);
     });
+    if (!voltas.length) {
+      var vazio = document.createElement("li");
+      vazio.className = "laps-empty";
+      vazio.textContent = "Nenhuma volta registrada ainda.";
+      listaVoltas.appendChild(vazio);
+    }
     document.getElementById("marcar-volta").disabled = estadoLivre.status === "parado";
   }
   document.getElementById("livre-toggle").addEventListener("click", function () {

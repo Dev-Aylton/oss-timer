@@ -69,8 +69,12 @@
       </header>
       <section class="phase-panel" id="rondas-phase-panel"><span class="phase-eyebrow">Fase atual</span><div class="phase-name" id="rondas-phase-name">Preparar</div><div class="phase-time" id="rondas-display">00:05</div></section>
       <section class="next-phase" id="rondas-next"><span class="next-phase-label">Próxima fase</span><div class="next-phase-details"><strong id="rondas-next-name">Exercício</strong><b id="rondas-next-time">05:00</b></div></section>
+      <section class="round-summary" aria-label="Progresso das rondas">
+        <div class="round-metric"><span>Ronda atual</span><strong><span id="rondas-current">1</span><small>de</small><span id="rondas-count">5</span></strong></div>
+        <div class="round-metric"><span>Ciclo atual</span><strong><span id="rondas-cycle-current">1</span><small>de</small><span id="rondas-cycle-count">1</span></strong></div>
+        <div class="round-metric"><span>Rondas restantes</span><strong id="rondas-left">5</strong></div>
+      </section>
       <section class="timer-controls rondas-controls">
-        <div class="remaining"><strong id="rondas-left">5</strong><span>Rondas para terminar</span></div>
         <button class="main-action" id="rondas-toggle" type="button" aria-label="Iniciar"><svg class="progress-ring" viewBox="0 0 100 100" aria-hidden="true"><circle class="progress-ring-track" cx="50" cy="50" r="44"></circle><circle class="progress-ring-value" cx="50" cy="50" r="44"></circle></svg><svg class="main-action-icon play-icon" viewBox="0 0 64 64" aria-hidden="true"><path d="M18 7C15.2 5.4 12 7.4 12 10.7v42.6c0 3.3 3.2 5.3 6 3.7l38-21.3c3-1.7 3-5.9 0-7.6L18 7Z"/></svg><span class="action-label" id="rondas-action-label">Iniciar</span></button>
       </section>
     </main>
@@ -84,11 +88,15 @@
         </span>
         <button class="icon-button" id="livre-reset" type="button" aria-label="Reiniciar">↻</button>
       </header>
-      <section class="phase-panel chronometer-panel"><span class="phase-eyebrow">Tempo decorrido</span><div class="phase-name">Cronômetro</div><div class="phase-time" id="livre-tempo">00:00</div></section>
+      <section class="phase-panel chronometer-panel"><span class="phase-eyebrow">Tempo decorrido</span><div class="phase-name">Cronômetro livre</div><div class="phase-time" id="livre-tempo" role="timer" aria-label="Tempo decorrido">00:00</div></section>
       <section class="next-phase chrono-laps">
-        <div class="latest-lap"><span>Última volta</span><strong id="livre-volta">—</strong></div>
-        <button id="marcar-volta" type="button" disabled>Marcar volta</button>
-        <ol id="livre-lista-voltas" aria-label="Voltas recentes"></ol>
+        <div class="latest-lap" aria-label="Última volta">
+          <span>Última volta <b id="livre-volta-numero">—</b></span>
+          <strong id="livre-volta">—</strong>
+          <small>Tempo acumulado <time id="livre-volta-total">—</time></small>
+        </div>
+        <button id="marcar-volta" type="button" disabled>Registrar volta</button>
+        <ol id="livre-lista-voltas" aria-label="Últimas três voltas"></ol>
       </section>
       <section class="timer-controls chrono-controls"><button class="main-action" id="livre-toggle" type="button" aria-label="Iniciar"><svg class="main-action-icon play-icon" viewBox="0 0 64 64" aria-hidden="true"><path d="M18 7C15.2 5.4 12 7.4 12 10.7v42.6c0 3.3 3.2 5.3 6 3.7l38-21.3c3-1.7 3-5.9 0-7.6L18 7Z"/></svg><span class="action-label" id="livre-action-label">Iniciar</span></button></section>
     </main>
@@ -101,7 +109,7 @@
       </nav>
       <section class="version-card" aria-label="Versão do aplicativo">
         <span class="version-mark" aria-hidden="true">OSS</span>
-        <span class="version-copy"><small>OSS TIMER · PWA</small><strong>Versão <span id="more-version">0.9.34</span></strong></span>
+        <span class="version-copy"><small>OSS TIMER · PWA</small><strong>Versão <span id="more-version">0.9.35</span></strong></span>
         <span class="version-status">ATUAL</span>
       </section>
     </main>
@@ -215,7 +223,7 @@
       </div>
       <div class="about-version-card">
         <span class="version-mark" aria-hidden="true">OSS</span>
-        <span><small>VERSÃO DO APLICATIVO</small><strong>v<span class="about-version">0.9.34</span></strong></span>
+        <span><small>VERSÃO DO APLICATIVO</small><strong>v<span class="about-version">0.9.35</span></strong></span>
         <span class="version-status">PWA</span>
       </div>
       <div class="about-creator">

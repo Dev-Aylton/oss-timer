@@ -3028,3 +3028,527 @@ select:focus-visible {
   #tabata-view .timer-top-tabata .brand-wordmark { font-size: 18px; }
   #tabata-view .timer-top-tabata .workout-title small { font-size: 9px; }
 }
+
+.timer-screen#rondas-view,
+.timer-screen#cronometro-view {
+  --timer-header-height: calc(68px + env(safe-area-inset-top));
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-areas: none;
+  row-gap: 8px;
+  padding-bottom: 8px;
+  background:
+    radial-gradient(ellipse at 50% 34%, rgba(50, 210, 122, 0.08), transparent 58%),
+    var(--canvas);
+}
+
+.timer-screen#rondas-view {
+  grid-template-rows: var(--timer-header-height) minmax(0, 1fr) auto auto minmax(88px, 13vh);
+}
+
+.timer-screen#cronometro-view {
+  grid-template-rows: var(--timer-header-height) minmax(0, 1fr) minmax(155px, min(30vh, 220px)) minmax(88px, 13vh);
+}
+
+#rondas-view > .timer-top,
+#cronometro-view > .timer-top,
+#rondas-view > .phase-panel,
+#cronometro-view > .phase-panel,
+#rondas-view > .next-phase,
+#cronometro-view > .next-phase,
+#rondas-view > .round-summary,
+#rondas-view > .timer-controls,
+#cronometro-view > .timer-controls {
+  grid-area: auto;
+}
+
+#rondas-view .timer-top,
+#cronometro-view .timer-top {
+  grid-template-columns: 44px minmax(0, 1fr) 44px;
+  padding-right: 14px;
+  padding-left: 14px;
+}
+
+#rondas-view .workout-title,
+#cronometro-view .workout-title {
+  gap: 4px;
+}
+
+#rondas-view .phase-panel,
+#cronometro-view .phase-panel {
+  min-width: 0;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-rows: auto auto minmax(0, 1fr);
+  justify-items: start;
+  align-items: center;
+  gap: 6px;
+  overflow: hidden;
+  margin: 4px 14px;
+  padding: clamp(16px, 4vw, 28px);
+  border: 1px solid rgba(157, 255, 67, 0.18);
+  border-left: 4px solid var(--phase, var(--lime));
+  border-radius: 22px;
+  background: linear-gradient(145deg, #202c24, #151d18);
+  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.18);
+  color: #f5f7f5;
+  text-align: left;
+}
+
+#rondas-view .phase-eyebrow,
+#cronometro-view .phase-eyebrow {
+  display: block;
+  color: var(--muted);
+  font-family: system-ui, sans-serif;
+  font-size: 11px;
+  font-weight: 750;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+#rondas-view .phase-name,
+#cronometro-view .phase-name {
+  grid-column: 1;
+  grid-row: 2;
+  max-width: 100%;
+  align-self: start;
+  overflow: hidden;
+  color: #f5f7f5;
+  font-family: system-ui, sans-serif;
+  font-size: clamp(20px, 5vw, 28px);
+  font-weight: 700;
+  letter-spacing: -0.035em;
+  line-height: 1.1;
+  text-overflow: ellipsis;
+  text-transform: none;
+  white-space: nowrap;
+}
+
+#rondas-view .phase-time,
+#cronometro-view .phase-time {
+  grid-column: 1;
+  grid-row: 3;
+  max-width: 100%;
+  align-self: center;
+  overflow: hidden;
+  color: var(--phase, var(--lime));
+  font-family: "Bebas Neue", Impact, sans-serif;
+  font-size: clamp(68px, 18vw, 124px);
+  font-weight: 400;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.015em;
+  line-height: 0.92;
+  text-overflow: clip;
+}
+
+#cronometro-view .phase-eyebrow { color: var(--orange-accent); }
+
+#cronometro-view .phase-panel {
+  border-color: rgba(255, 157, 67, 0.22);
+  border-left-color: var(--orange-accent);
+}
+
+#cronometro-view .phase-time { color: var(--lime); }
+
+#rondas-view .next-phase {
+  min-width: 0;
+  min-height: 68px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-rows: auto auto;
+  align-content: center;
+  justify-content: stretch;
+  gap: 5px;
+  overflow: hidden;
+  margin: 0 14px;
+  padding: 10px 14px;
+  border: 1px solid color-mix(in srgb, var(--next-phase-color, var(--lime)) 28%, var(--line));
+  border-left: 4px solid var(--next-phase-color, var(--lime));
+  border-radius: 16px;
+  background: color-mix(in srgb, var(--next-phase-color, var(--lime)) 8%, #18211c);
+  color: #f5f7f5;
+  text-align: left;
+}
+
+#rondas-view .next-phase-label {
+  color: var(--next-phase-color, var(--lime));
+  font-family: system-ui, sans-serif;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+}
+
+#rondas-view .next-phase-details {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+#rondas-view .next-phase strong {
+  color: #f5f7f5;
+  font-family: system-ui, sans-serif;
+  font-size: 16px;
+  font-weight: 650;
+  text-transform: none;
+}
+
+#rondas-view .next-phase b {
+  color: var(--next-phase-color, var(--lime));
+  font-family: "Bebas Neue", Impact, sans-serif;
+  font-size: 24px;
+  font-weight: 400;
+  font-variant-numeric: tabular-nums;
+}
+
+.round-summary {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  margin: 0 14px;
+}
+
+.round-metric {
+  min-width: 0;
+  min-height: 66px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 5px;
+  padding: 8px 10px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: rgba(24, 33, 28, 0.86);
+}
+
+.round-metric > span {
+  overflow: hidden;
+  color: var(--muted);
+  font-size: clamp(9px, 2.8vw, 11px);
+  font-weight: 650;
+  line-height: 1.1;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.round-metric > strong {
+  min-width: 0;
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+  color: var(--lime);
+  font-family: "Bebas Neue", Impact, sans-serif;
+  font-size: clamp(20px, 5.2vw, 27px);
+  font-weight: 400;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+}
+
+.round-metric > strong small {
+  color: var(--muted);
+  font-family: system-ui, sans-serif;
+  font-size: 10px;
+}
+
+#rondas-view .timer-controls,
+#cronometro-view .timer-controls {
+  min-width: 0;
+  min-height: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 14px 6px;
+  background: transparent;
+}
+
+#rondas-view .timer-controls .main-action,
+#cronometro-view .timer-controls .main-action {
+  position: relative;
+  isolation: auto;
+  width: min(100%, 340px);
+  height: 64px;
+  min-height: 64px;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  overflow: hidden;
+  padding: 0 20px;
+  border: 1px solid rgba(157, 255, 67, 0.38);
+  border-radius: 18px;
+  background: var(--lime);
+  box-shadow: 0 8px 24px rgba(157, 255, 67, 0.12);
+  color: var(--ink);
+}
+
+#rondas-view .timer-controls .main-action::before,
+#cronometro-view .timer-controls .main-action::before,
+#rondas-view .timer-controls .progress-ring,
+#cronometro-view .timer-controls .progress-ring {
+  display: none;
+}
+
+#rondas-view .timer-controls .main-action-icon,
+#cronometro-view .timer-controls .main-action-icon {
+  position: static;
+  z-index: auto;
+  width: 23px;
+  height: 23px;
+  flex: 0 0 auto;
+  fill: currentColor;
+  transform: none;
+}
+
+#rondas-view .timer-controls .main-action .action-label,
+#cronometro-view .timer-controls .main-action .action-label {
+  position: static;
+  display: block;
+  color: inherit;
+  font-family: system-ui, sans-serif;
+  font-size: 14px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  line-height: 1;
+}
+
+#rondas-view .timer-controls .main-action.is-running,
+#cronometro-view .timer-controls .main-action.is-running {
+  border-color: rgba(241, 55, 43, 0.42);
+  background: #f1372b;
+  color: #fff;
+  box-shadow: 0 8px 24px rgba(241, 55, 43, 0.12);
+}
+
+#cronometro-view .phase-panel {
+  grid-template-rows: auto auto minmax(0, 1fr);
+}
+
+#cronometro-view .chrono-laps {
+  min-width: 0;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-rows: auto minmax(0, 1fr);
+  align-content: stretch;
+  justify-content: stretch;
+  gap: 8px 12px;
+  overflow: hidden;
+  margin: 0 14px;
+  padding: 12px 14px;
+  border: 1px solid var(--line);
+  border-top: 3px solid var(--orange-accent);
+  border-radius: 18px;
+  background: linear-gradient(145deg, #1d2922, #151d18);
+  color: #f5f7f5;
+  text-align: left;
+}
+
+#cronometro-view .latest-lap {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 2px;
+}
+
+#cronometro-view .latest-lap > span {
+  color: var(--muted);
+  font-family: system-ui, sans-serif;
+  font-size: 10px;
+  font-weight: 750;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+#cronometro-view .latest-lap > span b {
+  margin-left: 4px;
+  color: var(--orange-accent);
+}
+
+#cronometro-view .latest-lap strong {
+  color: var(--lime);
+  font-family: "Bebas Neue", Impact, sans-serif;
+  font-size: clamp(30px, 8vw, 44px);
+  font-variant-numeric: tabular-nums;
+  font-weight: 400;
+  line-height: 0.95;
+}
+
+#cronometro-view .latest-lap > small {
+  color: var(--muted);
+  font-size: 10px;
+  line-height: 1.2;
+}
+
+#cronometro-view .latest-lap time { color: #f5f7f5; }
+
+#cronometro-view .chrono-laps > button {
+  min-width: 112px;
+  min-height: 44px;
+  align-self: center;
+  padding: 8px 12px;
+  border: 1px solid rgba(157, 255, 67, 0.28);
+  border-radius: 14px;
+  background: rgba(157, 255, 67, 0.1);
+  color: var(--lime);
+  font-size: 11px;
+  font-weight: 750;
+  line-height: 1.2;
+  text-transform: uppercase;
+}
+
+#cronometro-view .chrono-laps > button:disabled {
+  border-color: var(--line);
+  background: rgba(255, 255, 255, 0.03);
+  color: #849188;
+  cursor: not-allowed;
+}
+
+#cronometro-view .chrono-laps > ol {
+  min-width: 0;
+  min-height: 0;
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-rows: repeat(3, minmax(0, 1fr));
+  gap: 2px;
+  overflow: hidden;
+  margin: 0;
+  padding: 0;
+  color: #c3cec6;
+  font-family: system-ui, sans-serif;
+  font-size: 11px;
+  list-style: none;
+  white-space: nowrap;
+}
+
+#cronometro-view .chrono-laps li {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  align-items: center;
+  gap: 8px;
+  padding-top: 3px;
+  border-top: 1px solid rgba(255, 255, 255, 0.07);
+}
+
+#cronometro-view .chrono-laps .laps-empty {
+  display: block;
+  align-self: center;
+  color: #849188;
+  font-size: 10px;
+  text-align: center;
+  white-space: normal;
+}
+
+#cronometro-view .lap-number {
+  overflow: hidden;
+  color: #d7e2da;
+  text-overflow: ellipsis;
+}
+
+#cronometro-view .lap-split {
+  color: var(--lime);
+  font-variant-numeric: tabular-nums;
+  font-weight: 750;
+}
+
+#cronometro-view .lap-total {
+  overflow: hidden;
+  color: var(--muted);
+  font-size: 10px;
+  text-align: right;
+  text-overflow: ellipsis;
+}
+
+@media (orientation: landscape) and (max-height: 500px) {
+  .timer-screen#rondas-view,
+  .timer-screen#cronometro-view {
+    --timer-header-height: calc(52px + env(safe-area-inset-top));
+    grid-template-columns: minmax(0, 1.1fr) minmax(280px, 0.9fr);
+    row-gap: 4px;
+    column-gap: 0;
+  }
+
+  .timer-screen#rondas-view {
+    grid-template-rows: var(--timer-header-height) minmax(0, 1fr) auto auto;
+    grid-template-areas:
+      "header header"
+      "phase next"
+      "phase summary"
+      "phase controls";
+  }
+
+  .timer-screen#cronometro-view {
+    grid-template-rows: var(--timer-header-height) minmax(0, 1fr) minmax(76px, 18vh);
+    grid-template-areas:
+      "header header"
+      "phase laps"
+      "phase controls";
+  }
+
+  #rondas-view > .timer-top,
+  #cronometro-view > .timer-top { grid-area: header; }
+  #rondas-view > .phase-panel,
+  #cronometro-view > .phase-panel { grid-area: phase; }
+  #rondas-view > .next-phase { grid-area: next; }
+  #rondas-view > .round-summary { grid-area: summary; }
+  #rondas-view > .timer-controls { grid-area: controls; }
+  #cronometro-view > .chrono-laps { grid-area: laps; }
+  #cronometro-view > .timer-controls { grid-area: controls; }
+
+  #rondas-view .phase-panel,
+  #cronometro-view .phase-panel {
+    margin: 4px 10px;
+    padding: 12px 18px;
+  }
+
+  #rondas-view .phase-time,
+  #cronometro-view .phase-time { font-size: clamp(64px, 20vh, 98px); }
+
+  #rondas-view .next-phase { margin: 0 10px; }
+  .round-summary { margin: 0 10px; gap: 5px; }
+  .round-metric { min-height: 54px; padding: 6px 8px; }
+
+  #rondas-view .timer-controls,
+  #cronometro-view .timer-controls { padding: 0 10px 4px; }
+
+  #rondas-view .timer-controls .main-action,
+  #cronometro-view .timer-controls .main-action {
+    width: 100%;
+    height: 54px;
+    min-height: 54px;
+  }
+
+  #cronometro-view .chrono-laps {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: auto auto minmax(0, 1fr);
+    gap: 4px;
+    margin: 4px 10px;
+    padding: 8px 12px;
+  }
+
+  #cronometro-view .latest-lap { min-height: 44px; }
+  #cronometro-view .latest-lap strong { font-size: clamp(24px, 7vh, 34px); }
+  #cronometro-view .chrono-laps > button { grid-row: 2; width: 100%; }
+  #cronometro-view .chrono-laps > ol { grid-row: 3; }
+}
+
+@media (max-width: 360px) {
+  #rondas-view .timer-top,
+  #cronometro-view .timer-top { grid-template-columns: 40px minmax(0, 1fr) 40px; }
+  .round-summary { gap: 5px; margin-right: 10px; margin-left: 10px; }
+  .round-metric { padding-right: 7px; padding-left: 7px; }
+  #cronometro-view .chrono-laps { margin-right: 10px; margin-left: 10px; padding-right: 10px; padding-left: 10px; }
+  #cronometro-view .chrono-laps > button { min-width: 98px; font-size: 10px; }
+  #cronometro-view .chrono-laps li { gap: 5px; font-size: 10px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #rondas-view .timer-controls .main-action,
+  #cronometro-view .timer-controls .main-action { transition: none; }
+}

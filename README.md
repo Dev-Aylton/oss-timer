@@ -7,7 +7,7 @@
 </p>
 
 <p align="center">
-  <img alt="Versão 0.9.34" src="https://img.shields.io/badge/vers%C3%A3o-0.9.34-8dff3d?style=for-the-badge&labelColor=101512">
+  <img alt="Versão 0.9.35" src="https://img.shields.io/badge/vers%C3%A3o-0.9.35-8dff3d?style=for-the-badge&labelColor=101512">
   <img alt="PWA instalável" src="https://img.shields.io/badge/PWA-instal%C3%A1vel-32d27a?style=for-the-badge&labelColor=101512">
   <img alt="60 testes" src="https://img.shields.io/badge/testes-60%20aprovados-f5ff27?style=for-the-badge&labelColor=101512">
 </p>
@@ -23,8 +23,8 @@ O **OSS Timer** é um aplicativo web progressivo (PWA) feito para acompanhar o r
 ## Recursos
 
 - **Tabata e treinos personalizados** — todos os ajustes permanecem visíveis, com atalhos para tempo de luta e rounds e prévia da duração total.
-- **Timer de rondas** — mantenha uma configuração de rounds separada do treino Tabata.
-- **Cronômetro livre** — acompanhe o tempo e registre voltas.
+- **Timer de rondas** — acompanhe ronda e ciclo atuais, fases seguintes e tempo restante da sessão com uma configuração independente do Tabata.
+- **Cronômetro livre** — acompanhe o tempo decorrido e consulte as três voltas mais recentes, com tempo parcial e acumulado.
 - **Sinais durante o treino** — bipes, avisos por voz em português e contagem regressiva.
 - **Sessão sem interrupções** — opção para manter a tela ligada durante o treino.
 - **Pronto para instalar** — PWA com cache offline, ícone OSS Timer otimizado para a tela inicial do iPhone e layout para celular.
