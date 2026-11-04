@@ -15,6 +15,42 @@
   var repetir = document.getElementById("repeat-timer");
   var pressionado = 0;
   var toqueLongo = false;
+  var wakeLock = null;
+  var wakePedido = null;
+
+  function solicitarWakeLock() {
+    if (!navigator.wakeLock || !navigator.wakeLock.request) return;
+    wakePedido = navigator.wakeLock.request("screen").then(function (bloqueio) {
+      wakeLock = bloqueio;
+      wakePedido = null;
+    }).catch(function () {
+      wakePedido = null;
+    });
+  }
+
+  function liberarWakeLock() {
+    if (wakeLock && wakeLock.release) {
+      wakeLock.release().catch(function () {});
+      wakeLock = null;
+    }
+  }
+
+  function iniciarInteracao() {
+    OssAudio.desbloquear();
+    if (timer.estado().status !== "rodando") return;
+    solicitarWakeLock();
+  }
+
+  function lidarEvento(evento) {
+    if (evento.tipo === "fase") OssAudio.gongo();
+    if (evento.tipo === "contagem") OssAudio.contagem();
+    if (evento.tipo === "aviso") OssAudio.bipe();
+    if (evento.tipo === "proximo") OssAudio.bipe();
+    if (evento.tipo === "fim") OssAudio.gongo();
+    OssVoice.falar(OssVoice.fraseEvento(evento));
+  }
+
+  timer.aoEvento(lidarEvento);
 
   function renderizar(estado) {
     var rotulos = OssView.rotulos(estado, config);
@@ -41,21 +77,31 @@
 
   function alternar() {
     timer.alternar();
+    if (timer.estado().status === "rodando") iniciarInteracao();
+    if (timer.estado().status !== "rodando") {
+      OssVoice.cancelar();
+      liberarWakeLock();
+    }
     renderizar(timer.estado());
   }
 
   acao.addEventListener("click", alternar);
   pular.addEventListener("click", function () {
+    OssVoice.cancelar();
     timer.pular();
     renderizar(timer.estado());
   });
   reiniciar.addEventListener("click", function () {
+    OssVoice.cancelar();
+    liberarWakeLock();
     timer.reset();
     renderizar(timer.estado());
   });
   repetir.addEventListener("click", function () {
+    OssVoice.cancelar();
     timer.reset();
     timer.iniciar();
+    iniciarInteracao();
     renderizar(timer.estado());
   });
 
@@ -85,6 +131,12 @@
   });
   numero.addEventListener("contextmenu", function (evento) {
     evento.preventDefault();
+  });
+
+  document.addEventListener("visibilitychange", function () {
+    if (!document.hidden && timer.estado().status === "rodando" && !wakeLock && !wakePedido) {
+      solicitarWakeLock();
+    }
   });
 
   renderizar(timer.estado());

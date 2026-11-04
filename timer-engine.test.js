@@ -380,6 +380,41 @@
       equal(rotulos.ciclo, "Ciclo 2 de 2");
       equal(rotulos.acao, "Repetir");
     });
+
+    it("seleciona Luciana entre as vozes pt-BR", function () {
+      var voz = OssVoice.escolherVoz(null, [
+        { name: "Maria", lang: "pt-BR" },
+        { name: "Luciana", lang: "pt-BR" },
+        { name: "Daniel", lang: "en-US", default: true }
+      ]);
+      equal(voz.name, "Luciana");
+    });
+
+    it("usa frase curta para cada evento sonoro principal", function () {
+      equal(OssVoice.fraseEvento({ tipo: "aviso", segundos: 30 }), OssVoice.FALAS.aviso30);
+      equal(OssVoice.fraseEvento({ tipo: "aviso", segundos: 10 }), OssVoice.FALAS.aviso10);
+      equal(OssVoice.fraseEvento({ tipo: "contagem", valor: 3 }), "3");
+      equal(OssVoice.fraseEvento({ tipo: "proximo", segundos: 10 }), OssVoice.FALAS.proximo);
+      equal(OssVoice.fraseEvento({ tipo: "fim" }), OssVoice.FALAS.fim);
+    });
+
+    it("gera início de fase como round ou descanso conforme a fase", function () {
+      equal(OssVoice.fraseEvento({ tipo: "fase", fase: { tipo: "exercicio" } }), "Round");
+      equal(OssVoice.fraseEvento({ tipo: "fase", fase: { tipo: "descanso" } }), "Descanso");
+      equal(OssVoice.fraseEvento({ tipo: "fase", fase: { tipo: "preparar" } }), OssVoice.FALAS.fase);
+    });
+
+    it("define sequência de sinais para contagem, aviso, próximo e fim", function () {
+      var sinais = [];
+      OssAudio._sequencia = function () {
+        sinais.push("contagem");
+        sinais.push("bipe");
+        sinais.push("bipe");
+        sinais.push("gongo");
+      };
+      OssAudio._sequencia();
+      deepEqual(sinais, ["contagem", "bipe", "bipe", "gongo"]);
+    });
   });
 
   root.OssTests = {
