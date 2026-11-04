@@ -1,6 +1,6 @@
 (function () {
   "use strict";
-  var APP_VERSION = "0.9.2";
+  var APP_VERSION = "0.9.3";
   var dados = OssStorage.ler();
   var treinoAtual = dados.treinos.filter(function (item) { return item.id === dados.treinoAtual; })[0] || dados.treinos[0];
   var config = OssStorage.normalizar(treinoAtual);
@@ -306,6 +306,7 @@
 
   document.querySelectorAll(".about-version").forEach(function (el) { el.textContent = APP_VERSION; });
   document.getElementById("more-version").textContent = APP_VERSION;
+  document.getElementById("ajustes-version").textContent = APP_VERSION;
   configurarAjustes();
   renderizarTimer();
   renderizarRondas();

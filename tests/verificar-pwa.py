@@ -30,6 +30,10 @@ print("PRECACHE sintaxe virgulas: SIM" if virgulas_ok else "PRECACHE sintaxe vir
 
 with open("index.html", encoding="utf-8") as arquivo:
     html = arquivo.read()
+ajustes = html.split('id="ajustes-panel"', 1)[1].split("</section>", 1)[0]
+if 'id="ajustes-version"' not in ajustes:
+    raise SystemExit("painel Ajustes sem elemento de versao")
+print("Ajustes versao: SIM")
 with open("style.css", encoding="utf-8") as arquivo:
     css = arquivo.read()
 carregados = re.findall(r'(?:href|src)="([^"]+)"', html)
