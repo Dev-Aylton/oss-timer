@@ -7,7 +7,7 @@
 </p>
 
 <p align="center">
-  <img alt="Versão 0.9.35" src="https://img.shields.io/badge/vers%C3%A3o-0.9.35-8dff3d?style=for-the-badge&labelColor=101512">
+  <img alt="Versão 0.9.36" src="https://img.shields.io/badge/vers%C3%A3o-0.9.36-8dff3d?style=for-the-badge&labelColor=101512">
   <img alt="PWA instalável" src="https://img.shields.io/badge/PWA-instal%C3%A1vel-32d27a?style=for-the-badge&labelColor=101512">
   <img alt="60 testes" src="https://img.shields.io/badge/testes-60%20aprovados-f5ff27?style=for-the-badge&labelColor=101512">
 </p>
@@ -45,7 +45,7 @@ Depois, acesse [http://localhost:8000](http://localhost:8000).
 
 Publique o app em um endereço HTTPS. No iPhone, abra esse endereço no **Safari**, toque em **Compartilhar** e escolha **Adicionar à Tela de Início**. O ícone da tela inicial usa uma imagem dedicada de 180 × 180 pixels, com fundo opaco e contraste ajustado para o recorte arredondado do iOS. Depois de carregar o app, o cache permite continuar usando-o offline.
 
-Em outros navegadores compatíveis, use **Instalar aplicativo** ou **Adicionar à tela inicial**. O manifesto inclui ícones de 192 e 512 pixels, com o maior preparado também para máscaras de ícones. O layout reserva as áreas seguras do iPhone (notch/Dynamic Island e indicador de início), acompanha a altura dinâmica do navegador e reorganiza os controles em paisagem.
+Em outros navegadores compatíveis, use **Instalar aplicativo** ou **Adicionar à tela inicial**. O manifesto inclui ícones de 192 e 512 pixels, com o maior preparado também para máscaras de ícones. No iPhone, a barra de status usa fundo opaco para evitar transparência e blur sob o notch; o layout também reserva as áreas seguras (notch/Dynamic Island e indicador de início), acompanha a altura dinâmica do navegador e reorganiza os controles em paisagem.
 
 O arquivo vetorial de origem do ícone é [`icons/oss-timer-app-icon.svg`](icons/oss-timer-app-icon.svg); as imagens PNG usadas pelo app são exportadas desse desenho.
 

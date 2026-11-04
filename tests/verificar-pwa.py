@@ -67,7 +67,7 @@ metas_ios = [
     'name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"',
     'name="apple-mobile-web-app-capable" content="yes"',
     'name="apple-mobile-web-app-title" content="Oss Timer"',
-    'name="apple-mobile-web-app-status-bar-style" content="black-translucent"',
+    'name="apple-mobile-web-app-status-bar-style" content="black"',
     'rel="apple-touch-icon" sizes="180x180" href="icons/apple-touch-icon.png"',
 ]
 metas_ios_ausentes = [meta for meta in metas_ios if meta not in html]
