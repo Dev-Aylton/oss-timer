@@ -1,6 +1,6 @@
 (function () {
   "use strict";
-  var APP_VERSION = "0.9.1";
+  var APP_VERSION = "0.9.2";
   var dados = OssStorage.ler();
   var treinoAtual = dados.treinos.filter(function (item) { return item.id === dados.treinoAtual; })[0] || dados.treinos[0];
   var config = OssStorage.normalizar(treinoAtual);
@@ -244,7 +244,10 @@
   function renderizarHistorico() {
     var lista = document.getElementById("historico-lista");
     lista.textContent = "";
-    if (!historico.length) { lista.innerHTML = '<p>Nenhum treino concluído.</p>'; return; }
+    if (!historico.length) {
+      lista.innerHTML = '<div class="history-empty"><svg viewBox="0 0 160 160" role="img" aria-label="OSS Timer"><rect width="160" height="160" fill="#0E1116"/><g fill="none" stroke-width="16" transform="rotate(-90 80 80)"><circle cx="80" cy="80" r="52" stroke="#FFB020" stroke-dasharray="100 226.7" stroke-dashoffset="0"/><circle cx="80" cy="80" r="52" stroke="#19C37D" stroke-dasharray="100 226.7" stroke-dashoffset="-108.9"/><circle cx="80" cy="80" r="52" stroke="#E5484D" stroke-dasharray="100 226.7" stroke-dashoffset="-217.8"/></g><text x="80" y="91" fill="#F5F7FA" font-family="Bebas Neue, sans-serif" font-size="40" font-weight="700" letter-spacing="2" text-anchor="middle">OSS</text></svg><p>Nenhum treino concluído.</p></div>';
+      return;
+    }
     historico.forEach(function (entrada) {
       var item=document.createElement("p"); item.textContent=entrada.nome+" — "+OssStorage.formatarDuracao(entrada.duracao)+" — "+entrada.rondas+" rondas"; lista.appendChild(item);
     });

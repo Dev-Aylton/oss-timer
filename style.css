@@ -64,6 +64,8 @@ button, input, select, textarea { border-radius:10px; }
 button:disabled { background:#343A44!important; color:#C7CDD6!important; }
 button:active { filter:brightness(.85); }
 button:focus-visible,input:focus-visible,select:focus-visible { outline:3px solid #F5F7FA; outline-offset:2px; }
+.history-empty { display:grid; justify-items:center; gap:12px; text-align:center; }
+.history-empty svg { width:min(160px,50vw); height:auto; }
 @media (orientation:landscape) and (max-height:500px) {
   .screen { height:calc(100vh - 58px); }
   .tab-bar { height:58px; }
