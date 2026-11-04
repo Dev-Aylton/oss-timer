@@ -47,6 +47,15 @@
     return base;
   }
 
+  describe("OssAudio", function () {
+    it("define a sessão de áudio como ambient e aceita navigator sem audioSession", function () {
+      var navigatorSimulado = { audioSession: { type: "auto" } };
+      OssAudio.configurarAudioSession(navigatorSimulado);
+      equal(navigatorSimulado.audioSession.type, "ambient");
+      OssAudio.configurarAudioSession({});
+    });
+  });
+
   describe("OssEngine", function () {
     it("preset soma 3325 segundos e formata como 55:25", function () {
       var fases = OssEngine.construirFases(OssEngine.PRESET_SPARRING);

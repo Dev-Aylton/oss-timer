@@ -3,6 +3,14 @@
 
   var contexto = null;
 
+  function configurarAudioSession(navegador) {
+    if (arguments.length === 0) navegador = root.navigator;
+    if (typeof navegador !== "undefined" && navegador && navegador.audioSession) {
+      try { navegador.audioSession.type = "ambient"; } catch (e) {}
+    }
+  }
+  configurarAudioSession();
+
   function contextoDesbloqueado() {
     var construtor = root.AudioContext || root.webkitAudioContext;
     if (!construtor) return null;
@@ -51,6 +59,7 @@
   }
 
   root.OssAudio = {
+    configurarAudioSession: configurarAudioSession,
     desbloquear: desbloquear,
     bipe: bipe,
     contagem: contagem,
