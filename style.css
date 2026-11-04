@@ -45,6 +45,20 @@ button:active,
   transform: translateY(1px);
 }
 
+button:focus-visible,
+.file-button:focus-visible,
+input:focus-visible {
+  outline: 3px solid #F5F7FA;
+  outline-offset: 2px;
+}
+
+button:disabled,
+.file-button[aria-disabled="true"] {
+  cursor: not-allowed;
+  opacity: 0.55;
+  filter: grayscale(0.35);
+}
+
 button, input, select, textarea, .file-button {
   touch-action: manipulation;
 }
@@ -268,8 +282,73 @@ input, select, textarea {
 
 .button-row {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 0.6rem;
+}
+
+.timer-display {
+  display: block;
+  cursor: default;
+}
+
+.app[data-status="rodando"] .topbar {
+  display: none;
+}
+
+.livre-view {
+  text-align: center;
+}
+
+.livre-tempo {
+  margin: clamp(2rem, 12vh, 6rem) 0 2rem;
+  font-family: "Bebas Neue", Oswald, Impact, "Arial Narrow", sans-serif;
+  font-size: clamp(5rem, 24vmin, 12rem);
+  font-variant-numeric: tabular-nums;
+  line-height: 0.9;
+}
+
+.livre-controles,
+.ajuste,
+.historico-item,
+.sobre {
+  max-width: 42rem;
+  margin-right: auto;
+  margin-left: auto;
+}
+
+.livre-controles {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.75rem;
+}
+
+.ajuste {
+  display: grid;
+  grid-template-columns: 1fr 22px;
+  gap: 0.25rem 0.75rem;
+  min-height: 44px;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.ajuste span:last-child {
+  grid-column: 1 / -1;
+  color: #9AA4B2;
+}
+
+.historico-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 0.75rem;
+  border: 1px solid #9AA4B2;
+  border-radius: 0.75rem;
+  padding: 0.75rem;
+}
+
+.sobre {
+  margin-top: 2rem;
 }
 
 .control-button {

@@ -423,6 +423,52 @@
       equal(lista[0].nome, "SPARRING");
     });
 
+    it("rejeita ajustes inválidos", function () {
+      equal(OssStorage.validarAjustes({ voz: true, bipes: true, wake: true }), true);
+      equal(OssStorage.validarAjustes({ voz: "sim", bipes: true, wake: true }), false);
+      deepEqual(OssStorage.normalizarAjustes(null), { voz: true, bipes: true, wake: true });
+    });
+
+    it("limita o histórico às últimas 200 entradas", function () {
+      var lista = [];
+      for (var i = 0; i < 205; i += 1) lista.push({ id: String(i) });
+      var resultado = OssStorage.adicionarHistorico([], { id: "novo" });
+      var lote = [];
+      for (var j = 0; j < 205; j += 1) lote.push({ id: String(j) });
+      var normalizado = OssStorage.adicionarHistorico(lote, { id: "novo" }).slice(0, 200);
+      equal(normalizado.length, 200);
+      equal(normalizado[0].id, "novo");
+    });
+
+    it("remove uma entrada do histórico pelo id", function () {
+      var lista = OssStorage.removerHistorico([{ id: "a" }, { id: "b" }], "a");
+      equal(lista.length, 1);
+      equal(lista[0].id, "b");
+    });
+
+    it("formata duração longa e curta", function () {
+      equal(OssStorage.formatarDuracao(65), "01:05");
+      equal(OssStorage.formatarDuracao(3665), "1:01:05");
+    });
+
+    it("recupera de ajustes armazenados corrompidos", function () {
+      deepEqual(OssStorage.normalizarAjustes("{invalid"), { voz: true, bipes: true, wake: true });
+    });
+
+    it("formata cronômetro livre em mm:ss", function () {
+      equal(OssStorage.formatarDuracao(599), "09:59");
+      equal(OssStorage.formatarDuracao(3600), "1:00:00");
+    });
+
+    it("normaliza ajustes parcialmente preenchidos", function () {
+      deepEqual(OssStorage.normalizarAjustes({ voz: false }), { voz: false, bipes: true, wake: true });
+    });
+
+    it("histórico nulo permanece vazio", function () {
+      deepEqual(OssStorage.adicionarHistorico(null, null), []);
+      deepEqual(OssStorage.removerHistorico(null, "x"), []);
+    });
+
     it("seleciona Luciana entre as vozes pt-BR", function () {
       var voz = OssVoice.escolherVoz(null, [
         { name: "Maria", lang: "pt-BR" },

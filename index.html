@@ -28,10 +28,9 @@
 
     <main class="timer-area view" id="timer-view" aria-live="polite">
       <h1 class="phase-name" id="phase-name">Preparar</h1>
-      <button class="timer-display" id="timer-display" type="button"
-        aria-label="Toque para iniciar ou pausar. Toque longo para voltar à fase anterior.">
+      <div class="timer-display" id="timer-display" role="timer">
         00:10
-      </button>
+      </div>
       <div class="round-info" aria-label="Progresso do treino">
         <p id="round-label">Ronda 1 de 10</p>
         <p id="cycle-label">Ciclo 1 de 1</p>
@@ -42,6 +41,7 @@
       <p class="total-card">Tempo restante <strong id="total-remaining">55:25</strong></p>
       <div class="button-row">
         <button class="control-button primary" id="toggle-timer" type="button">Iniciar</button>
+        <button class="control-button" id="previous-phase" type="button">Fase anterior</button>
         <button class="control-button" id="skip-phase" type="button">Pular</button>
         <button class="control-button" id="reset-timer" type="button">Reiniciar</button>
         <button class="control-button primary" id="repeat-timer" type="button" hidden>Repetir</button>
@@ -63,9 +63,24 @@
       <p id="storage-mensagem" class="mensagem" role="status"></p>
     </section>
   </main>
-  <main class="tab-view" id="livre-view" hidden><h1>Livre</h1><p>Em breve</p></main>
-  <main class="tab-view" id="historico-view" hidden><h1>Histórico</h1><p>Em breve</p></main>
-  <main class="tab-view" id="ajustes-view" hidden><h1>Ajustes</h1><p>Em breve</p></main>
+  <main class="tab-view livre-view" id="livre-view" hidden>
+    <h1>Livre</h1><div class="livre-tempo" id="livre-tempo" role="timer">00:00</div>
+    <div class="livre-controles">
+      <button id="livre-toggle" type="button">Iniciar</button>
+      <button id="livre-reset" type="button">Zerar</button>
+    </div>
+  </main>
+  <main class="tab-view" id="historico-view" hidden>
+    <div class="tab-heading"><h1>Histórico</h1><button id="historico-limpar" type="button">Limpar tudo</button></div>
+    <div id="historico-lista"></div>
+  </main>
+  <main class="tab-view" id="ajustes-view" hidden>
+    <h1>Ajustes</h1>
+    <label class="ajuste"><span>Voz</span><input id="ajuste-voz" type="checkbox"><span id="status-voz">Voz: indisponível</span></label>
+    <label class="ajuste"><span>Bipes</span><input id="ajuste-bipes" type="checkbox"><span id="status-bipes">Bipes</span></label>
+    <label class="ajuste"><span>Tela sempre ligada</span><input id="ajuste-wake" type="checkbox"><span id="status-wake">Tela sempre ligada: indisponível neste aparelho</span></label>
+    <section class="sobre"><h2>Sobre</h2><p>Oss Timer</p><p>Feito por Aylton</p><p id="app-version"></p><a href="https://github.com/Dev-Aylton" target="_blank" rel="noopener noreferrer">GitHub</a></section>
+  </main>
   <nav class="tab-bar" aria-label="Navegação principal">
     <button data-tab="timer-view" type="button">Timer</button>
     <button data-tab="treinos-view" type="button" aria-current="page">Treinos</button>

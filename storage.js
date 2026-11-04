@@ -2,7 +2,11 @@
   "use strict";
 
   var CHAVE = "oss-timer.treinos.v1";
+  var CHAVE_AJUSTES = "oss-timer.ajustes.v1";
+  var CHAVE_HISTORICO = "oss-timer.historico.v1";
   var memoria = null;
+  var memoriaAjustes = null;
+  var memoriaHistorico = null;
   var inteiros = ["preparar", "exercicio", "descanso", "rondas", "ciclos", "descansoCiclo", "relaxe", "avisoProximo"];
   var limites = {
     preparar: [0, 3600], exercicio: [0, 86400], descanso: [0, 86400],
@@ -126,6 +130,85 @@
     return [normalizar(removido && removido.id ? removido : treinoSparring())];
   }
 
+  function ajustesPadrao() {
+    return { voz: true, bipes: true, wake: true };
+  }
+
+  function normalizarAjustes(dado) {
+    var base = ajustesPadrao();
+    if (!dado || typeof dado !== "object") return base;
+    return {
+      voz: typeof dado.voz === "boolean" ? dado.voz : base.voz,
+      bipes: typeof dado.bipes === "boolean" ? dado.bipes : base.bipes,
+      wake: typeof dado.wake === "boolean" ? dado.wake : base.wake
+    };
+  }
+
+  function validarAjustes(dado) {
+    if (!dado || typeof dado !== "object") return false;
+    return ["voz", "bipes", "wake"].every(function (campo) { return typeof dado[campo] === "boolean"; });
+  }
+
+  function lerChave(chave, padrao) {
+    try {
+      var texto = root.localStorage.getItem(chave);
+      return texto ? JSON.parse(texto) : padrao;
+    } catch (erro) {
+      return padrao;
+    }
+  }
+
+  function salvarChave(chave, valor) {
+    try { root.localStorage.setItem(chave, JSON.stringify(valor)); } catch (erro) {}
+    return valor;
+  }
+
+  function lerAjustes() {
+    if (memoriaAjustes) return memoriaAjustes;
+    memoriaAjustes = normalizarAjustes(lerChave(CHAVE_AJUSTES, ajustesPadrao()));
+    return memoriaAjustes;
+  }
+
+  function salvarAjustes(dado) {
+    memoriaAjustes = normalizarAjustes(dado);
+    return salvarChave(CHAVE_AJUSTES, memoriaAjustes);
+  }
+
+  function lerHistorico() {
+    if (memoriaHistorico) return memoriaHistorico;
+    var valor = lerChave(CHAVE_HISTORICO, []);
+    memoriaHistorico = Array.isArray(valor) ? valor.slice(0, 200) : [];
+    return memoriaHistorico;
+  }
+
+  function adicionarHistorico(lista, entrada) {
+    var base = Array.isArray(lista) ? lista.slice() : [];
+    if (!entrada || typeof entrada !== "object") return base.slice(0, 200);
+    base.unshift(entrada);
+    return base.slice(0, 200);
+  }
+
+  function removerHistorico(lista, id) {
+    return Array.isArray(lista) ? lista.filter(function (item) { return item.id !== id; }) : [];
+  }
+
+  function salvarHistorico(lista) {
+    memoriaHistorico = adicionarHistorico([], null).concat(Array.isArray(lista) ? lista.slice(0, 200) : []);
+    memoriaHistorico = memoriaHistorico.filter(function (item, indice, todos) {
+      return todos.indexOf(item) === indice;
+    }).slice(0, 200);
+    return salvarChave(CHAVE_HISTORICO, memoriaHistorico);
+  }
+
+  function formatarDuracao(segundos) {
+    segundos = Math.max(0, Number(segundos) || 0);
+    var horas = Math.floor(segundos / 3600);
+    var minutos = Math.floor((segundos % 3600) / 60);
+    var resto = segundos % 60;
+    return horas ? horas + ":" + String(minutos).padStart(2, "0") + ":" + String(resto).padStart(2, "0")
+      : String(minutos).padStart(2, "0") + ":" + String(resto).padStart(2, "0");
+  }
+
   root.OssStorage = {
     CHAVE: CHAVE,
     treinoSparring: treinoSparring,
@@ -136,5 +219,11 @@
     salvar: salvar,
     validarImportacao: validarImportacao,
     garantirNaoVazio: garantirNaoVazio
+    , CHAVE_AJUSTES: CHAVE_AJUSTES, CHAVE_HISTORICO: CHAVE_HISTORICO,
+    ajustesPadrao: ajustesPadrao, validarAjustes: validarAjustes,
+    normalizarAjustes: normalizarAjustes, lerAjustes: lerAjustes, salvarAjustes: salvarAjustes,
+    lerHistorico: lerHistorico, adicionarHistorico: adicionarHistorico,
+    removerHistorico: removerHistorico, salvarHistorico: salvarHistorico,
+    formatarDuracao: formatarDuracao
   };
 }((typeof globalThis !== "undefined" ? globalThis : this)));

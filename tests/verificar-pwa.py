@@ -21,6 +21,7 @@ with open("style.css", encoding="utf-8") as arquivo:
     css = arquivo.read()
 carregados = re.findall(r'(?:href|src)="([^"]+)"', html)
 carregados += re.findall(r'url\("([^"]+)"\)', css)
+carregados = [item for item in carregados if not re.match(r'^(?:https?:|mailto:|tel:)', item)]
 print("carregados ausentes do precache:",
       [item for item in carregados if item not in precache])
 
