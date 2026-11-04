@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Testes do Oss Timer</title>
+  <style>
+    body { font: 16px system-ui, sans-serif; margin: 2rem auto; max-width: 48rem; padding: 0 1rem; }
+    .resumo { display: flex; gap: 1.5rem; font-weight: 700; }
+    .falha { color: #b42318; }
+    li { margin: .4rem 0; }
+    button { font: inherit; padding: .5rem .8rem; }
+  </style>
+</head>
+<body>
+  <h1>Testes do Oss Timer</h1>
+  <p class="resumo">
+    <span>Total: <span id="numTotal">0</span></span>
+    <span>Aprovados: <span id="numPass">0</span></span>
+    <span>Reprovados: <span id="numFail">0</span></span>
+  </p>
+  <button id="executar" type="button">Executar novamente</button>
+  <ol id="resultados"></ol>
+  <script src="../timer-engine.js"></script>
+  <script src="../timer-engine.test.js"></script>
+  <script>
+    (function () {
+      "use strict";
+      var botao = document.getElementById("executar");
+      botao.addEventListener("click", executar);
+      function executar() {
+        var resultados = OssTests.executar();
+        var aprovados = resultados.filter(function (r) { return r.passou; }).length;
+        document.getElementById("numTotal").textContent = resultados.length;
+        document.getElementById("numPass").textContent = aprovados;
+        document.getElementById("numFail").textContent = resultados.length - aprovados;
+        var lista = document.getElementById("resultados");
+        lista.textContent = "";
+        resultados.forEach(function (r) {
+          var item = document.createElement("li");
+          item.textContent = r.passou ? "PASSOU — " + r.nome : "FALHOU — " + r.nome + ": " + r.erro;
+          if (!r.passou) item.className = "falha";
+          lista.appendChild(item);
+        });
+      }
+      executar();
+    }());
+  </script>
+</body>
+</html>
