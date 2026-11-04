@@ -516,9 +516,24 @@
     });
 
     it("gera início de fase como round ou descanso conforme a fase", function () {
-      equal(OssVoice.fraseEvento({ tipo: "fase", fase: { tipo: "exercicio" } }), "Round");
-      equal(OssVoice.fraseEvento({ tipo: "fase", fase: { tipo: "descanso" } }), "Descanso");
-      equal(OssVoice.fraseEvento({ tipo: "fase", fase: { tipo: "preparar" } }), OssVoice.FALAS.fase);
+      equal(OssVoice.fraseEvento({ tipo: "fase", indice: 1, fase: { tipo: "exercicio", ciclo: 1, ronda: 1 } }), "Valendo");
+      equal(OssVoice.fraseEvento({ tipo: "fase", indice: 3, fase: { tipo: "exercicio", ciclo: 1, ronda: 2 } }), "Round");
+      equal(OssVoice.fraseEvento({ tipo: "fase", indice: 1, fase: { tipo: "descanso" } }), "Descanso");
+      equal(OssVoice.fraseEvento({ tipo: "fase", indice: 0, fase: { tipo: "preparar" } }), "Prepare-se");
+    });
+
+    it("fala Valendo apenas no início do treino e não repete nos rounds", function () {
+      var clock = relogioFalso();
+      var timer = new OssEngine.Timer(cfg({ preparar: 2, exercicio: 4, descanso: 1 }), { now: clock.now });
+      var falas = [];
+      timer.aoEvento(function (evento) {
+        if (evento.tipo === "fase") falas.push(OssVoice.fraseEvento(evento));
+      });
+      timer.iniciar();
+      clock.avancar(7);
+      timer.tick();
+      deepEqual(falas, ["Prepare-se", "Valendo", "Descanso", "Round"]);
+      equal(falas.filter(function (frase) { return frase === "Valendo"; }).length, 1);
     });
 
     it("define sequência de sinais para contagem, aviso, próximo e fim", function () {

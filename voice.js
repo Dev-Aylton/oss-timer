@@ -2,7 +2,7 @@
   "use strict";
 
   var FALAS = {
-    fase: "Iniciar fase",
+    fase: "Prepare-se",
     aviso30: "Trinta segundos",
     aviso10: "Últimos dez segundos",
     contagem: "Contagem",
@@ -51,9 +51,12 @@
 
   function fraseEvento(evento) {
     if (evento.tipo === "fase") {
-      if (evento.fase && evento.fase.tipo === "exercicio") return "Round";
+      if (evento.fase && evento.fase.tipo === "exercicio") {
+        return evento.fase.ciclo === 1 && evento.fase.ronda === 1 ? "Valendo" : "Round";
+      }
       if (evento.fase && evento.fase.tipo === "descanso") return "Descanso";
-      return FALAS.fase;
+      if (evento.fase && evento.fase.tipo === "preparar") return FALAS.fase;
+      return "";
     }
     if (evento.tipo === "aviso" && evento.segundos === 30) return FALAS.aviso30;
     if (evento.tipo === "aviso" && evento.segundos === 10) return FALAS.aviso10;

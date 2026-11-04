@@ -1,6 +1,6 @@
 (function () {
   "use strict";
-  var APP_VERSION = "0.9.4";
+  var APP_VERSION = "0.9.5";
   var dados = OssStorage.ler();
   var treinoAtual = dados.treinos.filter(function (item) { return item.id === dados.treinoAtual; })[0] || dados.treinos[0];
   var config = OssStorage.normalizar(treinoAtual);
@@ -310,7 +310,7 @@
   function vozSelecionada() {
     if (typeof speechSynthesis === "undefined") return undefined;
     return vocesDisponiveis.filter(function (voz) { return voz.name === ajustes.vozNome && voz.lang === ajustes.vozIdioma; })[0] ||
-      OssVoice.selecionarVoz(speechSynthesis.getVoices(), ajustes.vozNome, ajustes.vozIdioma);
+      OssVoice.resolverVozSelecionada({ nome: ajustes.vozNome, idioma: ajustes.vozIdioma }, speechSynthesis.getVoices());
   }
 
   document.querySelectorAll(".about-version").forEach(function (el) { el.textContent = APP_VERSION; });
