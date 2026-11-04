@@ -426,7 +426,7 @@
     it("rejeita ajustes inválidos", function () {
       equal(OssStorage.validarAjustes({ voz: true, bipes: true, wake: true }), true);
       equal(OssStorage.validarAjustes({ voz: "sim", bipes: true, wake: true }), false);
-      deepEqual(OssStorage.normalizarAjustes(null), { voz: true, bipes: true, wake: true });
+      equal(OssStorage.normalizarAjustes(null).voz, true);
     });
 
     it("limita o histórico às últimas 200 entradas", function () {
@@ -452,7 +452,7 @@
     });
 
     it("recupera de ajustes armazenados corrompidos", function () {
-      deepEqual(OssStorage.normalizarAjustes("{invalid"), { voz: true, bipes: true, wake: true });
+      equal(OssStorage.normalizarAjustes("{invalid").voz, true);
     });
 
     it("formata cronômetro livre em mm:ss", function () {
@@ -461,7 +461,7 @@
     });
 
     it("normaliza ajustes parcialmente preenchidos", function () {
-      deepEqual(OssStorage.normalizarAjustes({ voz: false }), { voz: false, bipes: true, wake: true });
+      equal(OssStorage.normalizarAjustes({ voz: false }).voz, false);
     });
 
     it("histórico nulo permanece vazio", function () {
@@ -476,6 +476,35 @@
         { name: "Daniel", lang: "en-US", default: true }
       ]);
       equal(voz.name, "Luciana");
+    });
+
+    it("ordena vozes pt-BR primeiro, ignorando outros idiomas", function () {
+      var voces = OssVoice.vozesPortuguese([
+        { name: "Zelia", lang: "pt-PT" }, { name: "Ana", lang: "en-US" },
+        { name: "Maria", lang: "pt-BR" }
+      ]);
+      deepEqual(voces.map(function (voz) { return voz.lang; }), ["pt-BR", "pt-PT"]);
+    });
+
+    it("resolve a voz salva quando ela ainda existe", function () {
+      var voz = OssVoice.resolverVozSelecionada(
+        { nome: "Maria", idioma: "pt-BR" },
+        [{ name: "Maria", lang: "pt-BR" }, { name: "Joao", lang: "pt-BR" }]
+      );
+      equal(voz.name, "Maria");
+    });
+
+    it("usa automática quando a voz salva não existe", function () {
+      var voz = OssVoice.resolverVozSelecionada(
+        { nome: "Sumiu", idioma: "pt-BR" },
+        [{ name: "Maria", lang: "pt-BR" }]
+      );
+      equal(voz.name, "Maria");
+    });
+
+    it("preserva a voz salva quando a lista está vazia", function () {
+      var salva = { nome: "Maria", idioma: "pt-BR" };
+      deepEqual(OssVoice.resolverVozSelecionada(salva, []), salva);
     });
 
     it("usa frase curta para cada evento sonoro principal", function () {

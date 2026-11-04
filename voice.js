@@ -21,8 +21,32 @@
     for (var j = 0; j < voces.length; j += 1) {
       if (/pt-BR/i.test(voces[j].lang)) return voces[j];
     }
-    if (vozPadrao) return vozPadrao;
-    return voces[0];
+    return vozPadrao && /^pt(?:-|$)/i.test(String(vozPadrao.lang || "")) ? vozPadrao : null;
+  }
+
+  function vozesPortuguese(voces) {
+    voces = Array.isArray(voces) ? voces.slice() : [];
+    return voces.filter(function (voz) {
+      return /^pt(?:-|$)/i.test(String(voz.lang || ""));
+    }).sort(function (a, b) {
+      var abR = /^pt-br$/i.test(String(a.lang || "")) ? 0 : 1;
+      var bbR = /^pt-br$/i.test(String(b.lang || "")) ? 0 : 1;
+      if (abR !== bbR) return abR - bbR;
+      return String(a.name || "").localeCompare(String(b.name || ""), "pt-BR");
+    });
+  }
+
+  function resolverVozSelecionada(selecao, voces) {
+    var salva = selecao && selecao.nome ? selecao : null;
+    var lista = vozesPortuguese(voces);
+    if (!lista.length) return salva ? salva : null;
+    if (salva) {
+      var encontrada = lista.filter(function (voz) {
+        return voz.name === salva.nome && (!salva.idioma || voz.lang === salva.idioma);
+      })[0];
+      if (encontrada) return encontrada;
+    }
+    return escolherVoz(null, lista);
   }
 
   function fraseEvento(evento) {
@@ -39,14 +63,17 @@
     return "";
   }
 
-  function falar(texto) {
+  function falar(texto, selecao, callbacks) {
     if (!texto || !root.speechSynthesis || typeof root.SpeechSynthesisUtterance !== "function") return;
     var fala = new root.SpeechSynthesisUtterance(texto);
     var vozPadrao = root.speechSynthesis.getVoices().filter(function (voz) {
       return voz.default;
     })[0];
-    fala.voice = escolherVoz(vozPadrao, root.speechSynthesis.getVoices());
+    fala.voice = resolverVozSelecionada(selecao, root.speechSynthesis.getVoices()) || escolherVoz(vozPadrao, root.speechSynthesis.getVoices());
     fala.lang = "pt-BR";
+    callbacks = callbacks || {};
+    if (typeof callbacks.onend === "function") fala.onend = callbacks.onend;
+    if (typeof callbacks.onerror === "function") fala.onerror = callbacks.onerror;
     root.speechSynthesis.speak(fala);
   }
 
@@ -57,6 +84,8 @@
   root.OssVoice = {
     FALAS: FALAS,
     escolherVoz: escolherVoz,
+    vozesPortuguese: vozesPortuguese,
+    resolverVozSelecionada: resolverVozSelecionada,
     fraseEvento: fraseEvento,
     falar: falar,
     cancelar: cancelar

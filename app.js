@@ -65,7 +65,7 @@
       } catch (erro) {}
     }
     if (ajustes.voz) {
-      try { OssVoice.falar(OssVoice.fraseEvento(evento)); } catch (erro) {}
+      try { OssVoice.falar(OssVoice.fraseEvento(evento), vozSelecionadaAjustes()); } catch (erro) {}
     }
     if (evento.tipo === "fim") registrarHistorico();
   }
@@ -291,32 +291,149 @@
     var voz = document.getElementById("ajuste-voz");
     var bipes = document.getElementById("ajuste-bipes");
     var wake = document.getElementById("ajuste-wake");
+    var vozSelecao = document.getElementById("voz-selecao");
+    var testarVoz = document.getElementById("testar-voz");
     voz.checked = ajustes.voz;
     bipes.checked = ajustes.bipes;
     wake.checked = ajustes.wake;
     [voz, bipes, wake].forEach(function (campo) {
       campo.addEventListener("change", function () {
         ajustes = OssStorage.salvarAjustes({
-          voz: voz.checked, bipes: bipes.checked, wake: wake.checked
+          voz: voz.checked, bipes: bipes.checked, wake: wake.checked,
+          vozNome: ajustes.vozNome, vozIdioma: ajustes.vozIdioma
         });
         atualizarStatusAjustes();
       });
     });
-    atualizarStatusAjustes();
+    vozSelecao.addEventListener("change", function () {
+      var indice = vozSelecao.selectedIndex;
+      var valor = vozSelecao.options[indice] ? vozSelecao.options[indice].value : "";
+      if (!valor) {
+        ajustes.vozNome = "";
+        ajustes.vozIdioma = "";
+      } else {
+        var vozAtual = OssVoice.vozesPortuguese(getVozes()).filter(function (item) {
+          return item.name + "|" + item.lang === valor;
+        })[0];
+        ajustes.vozNome = vozAtual ? vozAtual.name : ajustes.vozNome;
+        ajustes.vozIdioma = vozAtual ? vozAtual.lang : ajustes.vozIdioma;
+      }
+      ajustes = OssStorage.salvarAjustes(ajustes);
+      atualizarStatusAjustes();
+    });
+    testarVoz.addEventListener("click", function () {
+      testarVoz.disabled = true;
+      testarVoz.textContent = "Falando…";
+      try {
+        if (!ajustes.voz || typeof speechSynthesis === "undefined" ||
+            typeof SpeechSynthesisUtterance !== "function") {
+          erroTesteVoz(testarVoz);
+          return;
+        }
+        OssVoice.falar(OssVoice.FALAS.fase, vozSelecionadaAjustes(), {
+          onend: function () { finalizarTesteVoz(testarVoz); },
+          onerror: function () { erroTesteVoz(testarVoz); }
+        });
+        if (!("speechSynthesis" in window)) erroTesteVoz(testarVoz);
+      } catch (erro) {
+        erroTesteVoz(testarVoz);
+      }
+    });
+    if (typeof speechSynthesis !== "undefined" && speechSynthesis.addEventListener) {
+      speechSynthesis.addEventListener("voiceschanged", function () {
+        atualizarListaVozes(false);
+      });
+    }
+    atualizarListaVozes(true);
   }
 
   function atualizarStatusAjustes() {
-    var vozNome = "voz padrão";
-    if (typeof speechSynthesis !== "undefined" && speechSynthesis.getVoices) {
-      var voces = speechSynthesis.getVoices();
-      var pt = voces.filter(function (item) { return String(item.lang).toLowerCase().indexOf("pt-br") === 0; })[0];
-      if (pt) vozNome = pt.name;
+    var statusVoz = document.getElementById("status-voz");
+    if (!ajustes.voz) {
+      statusVoz.textContent = "Voz: desativada";
+    } else if (ajustes.vozNome) {
+      var automatica = OssVoice.vozesPortuguese(getVozes()).filter(function (voz) {
+        return voz.name === ajustes.vozNome && voz.lang === ajustes.vozIdioma;
+      }).length ? false : true;
+      statusVoz.textContent = automatica
+        ? "Voz: automática (" + ajustes.vozNome + ")"
+        : "Voz: " + ajustes.vozNome;
+    } else {
+      var padrao = OssVoice.escolherVoz(null, OssVoice.vozesPortuguese(getVozes()));
+      statusVoz.textContent = padrao ? "Voz: automática (" + padrao.name + ")" : "Voz: automática";
     }
-    document.getElementById("status-voz").textContent = ajustes.voz
-      ? "Voz: " + vozNome : "Voz: desativada";
     document.getElementById("status-bipes").textContent = ajustes.bipes ? "Bipes: ativados" : "Bipes: desativados";
     document.getElementById("status-wake").textContent = ajustes.wake && navigator.wakeLock
       ? "Tela sempre ligada: ativa" : "Tela sempre ligada: desativada / indisponível neste aparelho";
+  }
+
+  function getVozes() {
+    try {
+      return typeof speechSynthesis !== "undefined" && speechSynthesis.getVoices
+        ? speechSynthesis.getVoices()
+        : [];
+    } catch (erro) {
+      return [];
+    }
+  }
+
+  function vozSelecionadaAjustes() {
+    return ajustes.vozNome ? { nome: ajustes.vozNome, idioma: ajustes.vozIdioma } : null;
+  }
+
+  function atualizarListaVozes(primeira) {
+    var select = document.getElementById("voz-selecao");
+    var voces = OssVoice.vozesPortuguese(getVozes());
+    while (select.options.length) select.remove(0);
+    var automatica = document.createElement("option");
+    automatica.value = "";
+    automatica.textContent = "Automática";
+    select.appendChild(automatica);
+    voces.forEach(function (voz) {
+      var option = document.createElement("option");
+      option.value = voz.name + "|" + voz.lang;
+      option.textContent = voz.name;
+      select.appendChild(option);
+    });
+    if (ajustes.vozNome) {
+      Array.prototype.forEach.call(select.options, function (option) {
+        if (option.value === ajustes.vozNome + "|" + ajustes.vozIdioma) option.selected = true;
+      });
+    } else {
+      select.value = "";
+    }
+    atualizarStatusAjustes();
+    if (primeira && !voces.length) iniciarCarregamentoVozes();
+    else if (voces.length) document.getElementById("status-voz").setAttribute("data-voces", "ok");
+  }
+
+  function iniciarCarregamentoVozes() {
+    var fim = Date.now() + 5000;
+    atualizarStatusAjustes();
+    var status = document.getElementById("status-voz");
+    status.textContent = "Carregando vozes…";
+    var tentar = window.setInterval(function () {
+      var voces = OssVoice.vozesPortuguese(getVozes());
+      atualizarListaVozes(false);
+      if (voces.length) window.clearInterval(tentar);
+      else if (Date.now() >= fim) {
+        window.clearInterval(tentar);
+        status.textContent = ajustes.voz
+          ? "Nenhuma voz em português encontrada neste aparelho; usando a voz padrão do sistema"
+          : "Voz: desativada";
+      }
+    }, 500);
+  }
+
+  function finalizarTesteVoz(botao) {
+    botao.disabled = false;
+    botao.textContent = "Testar voz";
+  }
+
+  function erroTesteVoz(botao) {
+    botao.disabled = false;
+    botao.textContent = "Testar voz";
+    document.getElementById("status-voz").textContent = "Erro: voz indisponível";
   }
 
   function renderizarLista() {

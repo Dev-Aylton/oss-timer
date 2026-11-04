@@ -337,6 +337,19 @@ input, select, textarea {
   color: #9AA4B2;
 }
 
+.voz-ajuste {
+  grid-template-columns: 1fr 22px;
+}
+.voz-ajuste select {
+  grid-column: 1 / -1;
+  min-height: 44px;
+  font-size: 16px;
+}
+.voz-ajuste button {
+  grid-column: 1 / -1;
+  min-height: 44px;
+}
+
 .historico-item {
   display: flex;
   align-items: center;

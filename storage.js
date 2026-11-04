@@ -2,7 +2,8 @@
   "use strict";
 
   var CHAVE = "oss-timer.treinos.v1";
-  var CHAVE_AJUSTES = "oss-timer.ajustes.v1";
+  var CHAVE_AJUSTES = "oss-timer.ajustes.v2";
+  var CHAVE_AJUSTES_ANTIGA = "oss-timer.ajustes.v1";
   var CHAVE_HISTORICO = "oss-timer.historico.v1";
   var memoria = null;
   var memoriaAjustes = null;
@@ -131,17 +132,20 @@
   }
 
   function ajustesPadrao() {
-    return { voz: true, bipes: true, wake: true };
+    return { voz: true, bipes: true, wake: true, vozNome: "", vozIdioma: "" };
   }
 
   function normalizarAjustes(dado) {
     var base = ajustesPadrao();
     if (!dado || typeof dado !== "object") return base;
-    return {
+    var normalizado = {
       voz: typeof dado.voz === "boolean" ? dado.voz : base.voz,
       bipes: typeof dado.bipes === "boolean" ? dado.bipes : base.bipes,
-      wake: typeof dado.wake === "boolean" ? dado.wake : base.wake
+      wake: typeof dado.wake === "boolean" ? dado.wake : base.wake,
+      vozNome: typeof dado.vozNome === "string" ? dado.vozNome : "",
+      vozIdioma: typeof dado.vozIdioma === "string" ? dado.vozIdioma : ""
     };
+    return normalizado;
   }
 
   function validarAjustes(dado) {
@@ -165,7 +169,10 @@
 
   function lerAjustes() {
     if (memoriaAjustes) return memoriaAjustes;
-    memoriaAjustes = normalizarAjustes(lerChave(CHAVE_AJUSTES, ajustesPadrao()));
+    var antigo = lerChave(CHAVE_AJUSTES, null);
+    var legado = antigo === null ? lerChave(CHAVE_AJUSTES_ANTIGA, ajustesPadrao()) : antigo;
+    memoriaAjustes = normalizarAjustes(legado);
+    if (antigo === null) salvarChave(CHAVE_AJUSTES, memoriaAjustes);
     return memoriaAjustes;
   }
 
@@ -219,7 +226,7 @@
     salvar: salvar,
     validarImportacao: validarImportacao,
     garantirNaoVazio: garantirNaoVazio
-    , CHAVE_AJUSTES: CHAVE_AJUSTES, CHAVE_HISTORICO: CHAVE_HISTORICO,
+    , CHAVE_AJUSTES: CHAVE_AJUSTES, CHAVE_AJUSTES_ANTIGA: CHAVE_AJUSTES_ANTIGA, CHAVE_HISTORICO: CHAVE_HISTORICO,
     ajustesPadrao: ajustesPadrao, validarAjustes: validarAjustes,
     normalizarAjustes: normalizarAjustes, lerAjustes: lerAjustes, salvarAjustes: salvarAjustes,
     lerHistorico: lerHistorico, adicionarHistorico: adicionarHistorico,

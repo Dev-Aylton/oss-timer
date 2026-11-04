@@ -77,7 +77,13 @@
   </main>
   <main class="tab-view" id="ajustes-view" hidden>
     <h1>Ajustes</h1>
-    <label class="ajuste"><span>Voz</span><input id="ajuste-voz" type="checkbox"><span id="status-voz">Voz: indisponível</span></label>
+    <div class="ajuste voz-ajuste">
+      <label for="ajuste-voz">Voz</label><input id="ajuste-voz" type="checkbox">
+      <label for="voz-selecao">Voz em português</label>
+      <select id="voz-selecao"></select>
+      <button id="testar-voz" type="button">Testar voz</button>
+      <span id="status-voz" role="status" aria-live="polite">Voz: indisponível</span>
+    </div>
     <label class="ajuste"><span>Bipes</span><input id="ajuste-bipes" type="checkbox"><span id="status-bipes">Bipes</span></label>
     <label class="ajuste"><span>Tela sempre ligada</span><input id="ajuste-wake" type="checkbox"><span id="status-wake">Tela sempre ligada: indisponível neste aparelho</span></label>
     <section class="sobre"><h2>Sobre</h2><p>Oss Timer</p><p>Feito por Aylton</p><p id="app-version"></p><a href="https://github.com/Dev-Aylton" target="_blank" rel="noopener noreferrer">GitHub</a></section>
