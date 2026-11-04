@@ -10,6 +10,12 @@
   <meta name="apple-mobile-web-app-title" content="Oss Timer">
   <title>Oss Timer</title>
   <link rel="manifest" href="manifest.json">
+  <script>
+    window.errosApp = [];
+    window.addEventListener("error", function (evento) {
+      window.errosApp.push(String(evento.message || evento.error || evento.type));
+    });
+  </script>
   <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
   <link rel="stylesheet" href="style.css">
   <script src="timer-engine.js" defer></script>

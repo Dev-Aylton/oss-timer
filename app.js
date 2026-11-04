@@ -1,6 +1,6 @@
 (function () {
   "use strict";
-  var APP_VERSION = "0.7.0";
+  var APP_VERSION = "0.8.0";
 
   var dadosTreino = OssStorage.ler();
   var treinoAtual = dadosTreino.treinos.filter(function (item) {
@@ -24,6 +24,7 @@
   var abaAtual = "timer-view";
   var ajustes = OssStorage.lerAjustes();
   var fases = OssEngine.construirFases(config);
+  var historico = OssStorage.lerHistorico();
 
   function solicitarWakeLock() {
     if (!ajustes.wake || !navigator.wakeLock || !navigator.wakeLock.request) return;
@@ -230,8 +231,6 @@
     try { Promise.resolve(livreWake.release()).catch(function () {}); } catch (erro) {}
     livreWake = null;
   }
-
-  var historico = OssStorage.lerHistorico();
 
   function registrarHistorico() {
     historico = OssStorage.adicionarHistorico(historico, {

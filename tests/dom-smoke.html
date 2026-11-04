@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <title>Teste DOM do Oss Timer</title>
+</head>
+<body>
+  <div id="resultado">executando</div>
+  <iframe id="app-frame" src="../index.html" allow="fullscreen"></iframe>
+  <script>
+    window.errosCarga = [];
+    window.addEventListener("error", function (evento) {
+      window.errosCarga.push(String(evento.message || evento.error || evento.type));
+    });
+
+    var frame = document.getElementById("app-frame");
+    frame.addEventListener("load", function () {
+      window.setTimeout(function () {
+        var doc = frame.contentDocument || frame.contentWindow.document;
+        var testes = [];
+        function adicionar(nome, ok, detalhe) {
+          testes.push({ nome: nome, ok: ok, detalhe: detalhe || "" });
+        }
+        try {
+          var erroNoApp = frame.contentWindow && frame.contentWindow.errosApp;
+          adicionar("sem erro na carga", window.errosCarga.length === 0 && (!erroNoApp || erroNoApp.length === 0),
+            window.errosCarga.concat(erroNoApp || []).join("; "));
+
+          var botoesAba = doc.querySelectorAll(".tab-button[data-view]");
+          for (var i = 0; i < botoesAba.length; i += 1) botoesAba[i].click();
+          var visiveis = doc.querySelectorAll(".tab-view:not([hidden])");
+          adicionar("abas trocam", visiveis.length === 1, "visiveis=" + visiveis.length);
+
+          var abaTimer = doc.querySelector('[data-view="timer-view"]');
+          if (abaTimer) abaTimer.click();
+          var iniciar = doc.getElementById("toggle-timer");
+          var totalAntes = doc.getElementById("total-remaining").textContent;
+          iniciar.click();
+          window.setTimeout(function () {
+            adicionar("iniciar vira pausar", iniciar.textContent === "Pausar",
+              "texto=" + iniciar.textContent);
+            var totalDepois = doc.getElementById("total-remaining").textContent;
+            iniciar.click();
+            window.setTimeout(function () {
+              var totalPausado = doc.getElementById("total-remaining").textContent;
+              adicionar("tempo muda apos iniciar", totalAntes !== totalDepois,
+                totalAntes + " -> " + totalDepois);
+              adicionar("pausar para o tempo", totalPausado === totalDepois,
+                totalDepois + " -> " + totalPausado);
+
+              var faseAntes = doc.getElementById("phase-name").textContent;
+              doc.getElementById("skip-phase").click();
+              var faseAposPular = doc.getElementById("phase-name").textContent;
+              adicionar("pular muda fase", faseAntes !== faseAposPular,
+                faseAntes + " -> " + faseAposPular);
+              doc.getElementById("previous-phase").click();
+              var faseAposAnterior = doc.getElementById("phase-name").textContent;
+              adicionar("fase anterior muda fase", faseAposAnterior !== faseAposPular,
+                faseAposPular + " -> " + faseAposAnterior);
+              doc.getElementById("reset-timer").click();
+              adicionar("reiniciar restaura fase", doc.getElementById("phase-name").textContent === "Preparar",
+                doc.getElementById("phase-name").textContent);
+
+              var falhas = testes.filter(function (item) { return !item.ok; }).length;
+              var resultado = document.getElementById("resultado");
+              resultado.setAttribute("data-total", String(testes.length));
+              resultado.setAttribute("data-falhas", String(falhas));
+              resultado.textContent = testes.map(function (item) {
+                return (item.ok ? "OK: " : "FALHA: ") + item.nome +
+                  (item.detalhe ? " (" + item.detalhe + ")" : "");
+              }).join("\n");
+            }, 350);
+          }, 2200);
+        } catch (erro) {
+          document.getElementById("resultado").textContent = "FALHA: excecao (" + erro.message + ")";
+        }
+      }, 500);
+    });
+  </script>
+</body>
+</html>

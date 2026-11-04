@@ -11,6 +11,11 @@ print("manifest icones:",
 
 with open("sw.js", encoding="utf-8") as arquivo:
     sw = arquivo.read()
+cache_name = re.search(r'const CACHE_NAME = "([^"]+)"', sw)
+app_version = re.search(r'var APP_VERSION = "([^"]+)"', open("app.js", encoding="utf-8").read())
+if not cache_name or not app_version or cache_name.group(1) != "oss-timer-v" + app_version.group(1):
+    raise SystemExit("CACHE_NAME nao corresponde a APP_VERSION")
+print("versao PWA: OK", app_version.group(1), cache_name.group(1))
 bloco = sw.split("const PRECACHE = [", 1)[1].split("];", 1)[0]
 precache = re.findall(r'"([^"]+)"', bloco)
 print("PRECACHE ausentes:", [item for item in precache if not os.path.isfile(item)])
