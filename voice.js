@@ -77,6 +77,9 @@
     callbacks = callbacks || {};
     if (typeof callbacks.onend === "function") fala.onend = callbacks.onend;
     if (typeof callbacks.onerror === "function") fala.onerror = callbacks.onerror;
+    if (root.OssAudio && root.OssAudio.configurarAudioSession) {
+      root.OssAudio.configurarAudioSession();
+    }
     root.speechSynthesis.speak(fala);
   }
 

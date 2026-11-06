@@ -1,6 +1,6 @@
 (function () {
   "use strict";
-  var APP_VERSION = "0.9.38";
+  var APP_VERSION = "0.9.40";
   var dados = OssStorage.ler();
   var treinoAtual = dados.treinos.filter(function (item) { return item.id === dados.treinoAtual; })[0] || dados.treinos[0];
   var config = OssStorage.normalizar(treinoAtual);

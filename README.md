@@ -7,9 +7,9 @@
 </p>
 
 <p align="center">
-  <img alt="Versão 0.9.36" src="https://img.shields.io/badge/vers%C3%A3o-0.9.36-8dff3d?style=for-the-badge&labelColor=101512">
+  <img alt="Versão 0.9.40" src="https://img.shields.io/badge/vers%C3%A3o-0.9.40-8dff3d?style=for-the-badge&labelColor=101512">
   <img alt="PWA instalável" src="https://img.shields.io/badge/PWA-instal%C3%A1vel-32d27a?style=for-the-badge&labelColor=101512">
-  <img alt="60 testes" src="https://img.shields.io/badge/testes-60%20aprovados-f5ff27?style=for-the-badge&labelColor=101512">
+  <img alt="62 testes" src="https://img.shields.io/badge/testes-62%20aprovados-f5ff27?style=for-the-badge&labelColor=101512">
 </p>
 
 O **OSS Timer** é um aplicativo web progressivo (PWA) feito para acompanhar o ritmo do treino sem tirar o foco da luta. A interface de alto contraste destaca a fase atual, o tempo restante e o que vem a seguir. Instale no celular ou use no navegador — inclusive offline, depois de carregar o app.
@@ -26,6 +26,7 @@ O **OSS Timer** é um aplicativo web progressivo (PWA) feito para acompanhar o r
 - **Timer de rondas** — acompanhe ronda e ciclo atuais, fases seguintes e tempo restante da sessão com uma configuração independente do Tabata.
 - **Cronômetro livre** — acompanhe o tempo decorrido e consulte as três voltas mais recentes, com tempo parcial e acumulado.
 - **Sinais durante o treino** — bipes, avisos por voz em português e contagem regressiva.
+- **Música durante avisos** — o app solicita uma sessão de áudio ambiente para que a fala possa tocar junto com outras mídias. O suporte depende do navegador e do iOS; confirme o comportamento no aparelho.
 - **Sessão sem interrupções** — opção para manter a tela ligada durante o treino.
 - **Pronto para instalar** — PWA com cache offline, ícone OSS Timer otimizado para a tela inicial do iPhone e layout para celular.
 
@@ -39,7 +40,7 @@ Abra `index.html` para experimentar o aplicativo. Para testar a instalação e o
 python -m http.server 8000
 ```
 
-Depois, acesse [http://localhost:8000](http://localhost:8000).
+Depois, acesse [http://localhost:8000](http://localhost:8000). O servidor local serve apenas para desenvolvimento; para instalar o PWA no iPhone, use um endereço HTTPS e abra-o no Safari.
 
 ### Instalar
 

@@ -1,4 +1,4 @@
-const CACHE_NAME = "oss-timer-v0.9.38";
+const CACHE_NAME = "oss-timer-v0.9.40";
 const PRECACHE = [
   "index.html",
   "style.css",

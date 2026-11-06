@@ -573,6 +573,24 @@
       deepEqual(OssVoice.resolverVozSelecionada(salva, []), salva);
     });
 
+    it("configura sessão ambient antes de solicitar a fala", function () {
+      var sintese = root.speechSynthesis;
+      if (!sintese || typeof sintese.speak !== "function" ||
+          typeof root.SpeechSynthesisUtterance !== "function") return;
+      var falarOriginal = sintese.speak;
+      var configurarOriginal = OssAudio.configurarAudioSession;
+      var chamadas = [];
+      try {
+        sintese.speak = function () { chamadas.push("speak"); };
+        OssAudio.configurarAudioSession = function () { chamadas.push("ambient"); };
+        OssVoice.falar("Teste");
+        deepEqual(chamadas, ["ambient", "speak"]);
+      } finally {
+        sintese.speak = falarOriginal;
+        OssAudio.configurarAudioSession = configurarOriginal;
+      }
+    });
+
     it("usa frase curta para cada evento sonoro principal", function () {
       equal(OssVoice.fraseEvento({ tipo: "aviso", segundos: 30 }), OssVoice.FALAS.aviso30);
       equal(OssVoice.fraseEvento({ tipo: "aviso", segundos: 10 }), OssVoice.FALAS.aviso10);
