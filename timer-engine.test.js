@@ -449,7 +449,7 @@
       var migrado = OssStorage.migrar({});
       equal(migrado.version, 1);
       equal(migrado.treinos.length, 1);
-      equal(migrado.treinos[0].nome, "SPARRING");
+      equal(migrado.treinos[0].nome, "SPARRING JIU-JITSU");
     });
 
     it("migração não altera a entrada e gera IDs únicos para treinos sem ID", function () {
@@ -482,7 +482,7 @@
     it("garante que a lista nunca fica vazia", function () {
       var lista = OssStorage.garantirNaoVazio([]);
       equal(lista.length, 1);
-      equal(lista[0].nome, "SPARRING");
+      equal(lista[0].nome, "SPARRING JIU-JITSU");
     });
 
     it("rejeita ajustes inválidos", function () {
@@ -526,6 +526,30 @@
       equal(OssStorage.normalizarAjustes({ voz: false }).voz, false);
     });
 
+    it("normaliza volumes e variante de voz com limites seguros", function () {
+      var ajustes = OssStorage.normalizarAjustes({
+        volumeVoz: 9, volumeBipes: 0.1, variacaoVoz: "grave"
+      });
+      equal(ajustes.volumeVoz, 2.5);
+      equal(ajustes.volumeBipes, 0.5);
+      equal(ajustes.variacaoVoz, "grave");
+      equal(OssStorage.normalizarAjustes(null).volumeVoz, 1.5);
+    });
+
+    it("seleciona a voz OSS local por padrão e migra seleção automática antiga", function () {
+      equal(OssStorage.normalizarAjustes(null).vozNome, OssVoice.ID_VOZ_LOCAL);
+      equal(OssStorage.normalizarAjustes({ vozNome: "" }).vozNome, OssVoice.ID_VOZ_LOCAL);
+    });
+
+    it("atualiza o nome padrão do Sparring legado", function () {
+      var dados = OssStorage.migrar({
+        version: 1,
+        treinoAtual: "sparring",
+        treinos: [Object.assign(OssStorage.treinoSparring(), { nome: "SPARRING" })]
+      });
+      equal(dados.treinos[0].nome, "SPARRING JIU-JITSU");
+    });
+
     it("histórico nulo permanece vazio", function () {
       deepEqual(OssStorage.adicionarHistorico(null, null), []);
       deepEqual(OssStorage.removerHistorico(null, "x"), []);
@@ -540,7 +564,7 @@
       equal(voz.name, "Luciana");
     });
 
-    it("usa Luciana como voz automática mesmo quando outra voz é padrão", function () {
+    it("resolve Luciana como fallback nativo quando não há seleção salva", function () {
       var luciana = { name: "Luciana", lang: "pt-BR" };
       var voz = OssVoice.resolverVozSelecionada(null, [
         { name: "Maria", lang: "pt-BR", default: true },
@@ -636,6 +660,78 @@
         OssVoice.falar("Preparar", null, callbacks);
         equal(chamadas[0], "audio-voz/preparar.wav");
         equal(chamadas[1], callbacks);
+      } finally {
+        OssAudio.reproduzirArquivo = reproduzirOriginal;
+        if (navegadorOriginal) Object.defineProperty(root, "navigator", navegadorOriginal);
+        else delete root.navigator;
+      }
+    });
+
+    it("usa a voz local selecionada fora do iPhone", function () {
+      var navegadorOriginal = Object.getOwnPropertyDescriptor(root, "navigator");
+      var reproduzirOriginal = OssAudio.reproduzirArquivo;
+      var chamadas = [];
+      try {
+        Object.defineProperty(root, "navigator", {
+          configurable: true,
+          value: { userAgent: "Android" }
+        });
+        OssAudio.reproduzirArquivo = function (arquivo) { chamadas.push(arquivo); };
+        OssVoice.falar("Preparar", { offline: true });
+        equal(chamadas[0], "audio-voz/preparar.wav");
+      } finally {
+        OssAudio.reproduzirArquivo = reproduzirOriginal;
+        if (navegadorOriginal) Object.defineProperty(root, "navigator", navegadorOriginal);
+        else delete root.navigator;
+      }
+    });
+
+    it("permite voz do aparelho quando selecionada explicitamente no iPhone", function () {
+      var navegadorOriginal = Object.getOwnPropertyDescriptor(root, "navigator");
+      var utteranceOriginal = Object.getOwnPropertyDescriptor(root, "SpeechSynthesisUtterance");
+      var sintese = root.speechSynthesis;
+      var falarOriginal = sintese && sintese.speak;
+      var configurarOriginal = OssAudio.configurarAudioSession;
+      var chamadas = [];
+      if (!sintese || typeof sintese.speak !== "function" ||
+          typeof root.SpeechSynthesisUtterance !== "function") return;
+      try {
+        Object.defineProperty(root, "navigator", {
+          configurable: true,
+          value: { userAgent: "iPhone" }
+        });
+        Object.defineProperty(root, "SpeechSynthesisUtterance", {
+          configurable: true,
+          value: function (texto) { this.text = texto; }
+        });
+        sintese.speak = function (fala) { chamadas.push(fala); };
+        OssAudio.configurarAudioSession = function () {};
+        var voz = { name: "Luciana", lang: "pt-BR" };
+        OssVoice.falar("Preparar", { offline: false, voice: voz });
+        equal(chamadas.length, 1);
+        equal(chamadas[0].voice, voz);
+      } finally {
+        sintese.speak = falarOriginal;
+        OssAudio.configurarAudioSession = configurarOriginal;
+        if (navegadorOriginal) Object.defineProperty(root, "navigator", navegadorOriginal);
+        else delete root.navigator;
+        if (utteranceOriginal) Object.defineProperty(root, "SpeechSynthesisUtterance", utteranceOriginal);
+        else delete root.SpeechSynthesisUtterance;
+      }
+    });
+
+    it("seleciona a variante grave dos clipes offline", function () {
+      var navegadorOriginal = Object.getOwnPropertyDescriptor(root, "navigator");
+      var reproduzirOriginal = OssAudio.reproduzirArquivo;
+      var velocidade = 0;
+      try {
+        Object.defineProperty(root, "navigator", {
+          configurable: true,
+          value: { userAgent: "iPhone" }
+        });
+        OssAudio.reproduzirArquivo = function (arquivo, callbacks, taxa) { velocidade = taxa; };
+        OssVoice.falar("Preparar", null, {}, "grave");
+        equal(velocidade, 0.88);
       } finally {
         OssAudio.reproduzirArquivo = reproduzirOriginal;
         if (navegadorOriginal) Object.defineProperty(root, "navigator", navegadorOriginal);

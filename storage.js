@@ -26,7 +26,7 @@
   function treinoSparring() {
     return {
       id: "sparring",
-      nome: "SPARRING",
+      nome: "SPARRING JIU-JITSU",
       preparar: 10, exercicio: 300, descanso: 35, rondas: 10, ciclos: 1,
       descansoCiclo: 0, relaxe: 0, avisosFim: [30, 10], avisoProximo: 10
     };
@@ -76,6 +76,9 @@
       if (!treino || typeof treino !== "object" || typeof treino.id !== "string" ||
           !treino.id || ids[normalizado.id]) {
         normalizado.id = indice === 0 ? "sparring" : idNovo();
+      }
+      if (normalizado.id === "sparring" && normalizado.nome === "SPARRING") {
+        normalizado.nome = "SPARRING JIU-JITSU";
       }
       ids[normalizado.id] = true;
       if (indice === 0 && normalizado.nome === "") normalizado.nome = "Treino " + (indice + 1);
@@ -146,18 +149,29 @@
   }
 
   function ajustesPadrao() {
-    return { voz: true, bipes: true, wake: true, vozNome: "", vozIdioma: "" };
+    return {
+      voz: true, bipes: true, wake: true,
+      vozNome: "oss-offline", vozIdioma: "",
+      volumeVoz: 1.5, volumeBipes: 1, variacaoVoz: "natural"
+    };
   }
 
   function normalizarAjustes(dado) {
     var base = ajustesPadrao();
     if (!dado || typeof dado !== "object") return base;
+    function volume(campo) {
+      var valor = Number(dado[campo]);
+      return Number.isFinite(valor) ? Math.min(2.5, Math.max(0.5, valor)) : base[campo];
+    }
     var normalizado = {
       voz: typeof dado.voz === "boolean" ? dado.voz : base.voz,
       bipes: typeof dado.bipes === "boolean" ? dado.bipes : base.bipes,
       wake: typeof dado.wake === "boolean" ? dado.wake : base.wake,
-      vozNome: typeof dado.vozNome === "string" ? dado.vozNome : "",
-      vozIdioma: typeof dado.vozIdioma === "string" ? dado.vozIdioma : ""
+      vozNome: typeof dado.vozNome === "string" && dado.vozNome ? dado.vozNome : base.vozNome,
+      vozIdioma: typeof dado.vozIdioma === "string" ? dado.vozIdioma : "",
+      volumeVoz: volume("volumeVoz"),
+      volumeBipes: volume("volumeBipes"),
+      variacaoVoz: dado.variacaoVoz === "grave" ? "grave" : base.variacaoVoz
     };
     return normalizado;
   }
@@ -210,7 +224,17 @@
   function lerHistorico() {
     if (memoriaHistorico) return memoriaHistorico;
     var valor = lerChave(CHAVE_HISTORICO, []);
-    memoriaHistorico = Array.isArray(valor) ? valor.slice(0, 200) : [];
+    var usados = Object.create(null);
+    memoriaHistorico = Array.isArray(valor) ? valor.slice(0, 200).filter(function (item) {
+      return item && typeof item === "object" && !Array.isArray(item);
+    }).map(function (item, indice) {
+      var copia = Object.assign({}, item);
+      if (typeof copia.id !== "string" || !copia.id || usados[copia.id]) {
+        copia.id = "historico-" + indice + "-" + Date.now().toString(36);
+      }
+      usados[copia.id] = true;
+      return copia;
+    }) : [];
     return memoriaHistorico;
   }
 

@@ -6,6 +6,9 @@
   var filaVoz = [];
   var carregandoVoz = false;
   var fonteVozAtiva = null;
+  var saidaVoz = null;
+  var volumeVoz = 1.5;
+  var volumeBipes = 1;
   var geracaoVoz = 0;
 
   function aplicarTipoAudioAmbient(sessao) {
@@ -50,6 +53,30 @@
     return contexto;
   }
 
+  function obterSaidaVoz(audio) {
+    if (saidaVoz) return saidaVoz;
+
+    var ganho = audio.createGain();
+    ganho.gain.value = 3 * volumeVoz;
+    if (typeof audio.createDynamicsCompressor !== "function") {
+      ganho.gain.value = volumeVoz;
+      ganho.connect(audio.destination);
+      saidaVoz = ganho;
+      return saidaVoz;
+    }
+
+    var compressor = audio.createDynamicsCompressor();
+    compressor.threshold.value = -18;
+    compressor.knee.value = 12;
+    compressor.ratio.value = 8;
+    compressor.attack.value = 0.003;
+    compressor.release.value = 0.25;
+    ganho.connect(compressor);
+    compressor.connect(audio.destination);
+    saidaVoz = ganho;
+    return saidaVoz;
+  }
+
   function tocar(frequencia, duracao, volume, atraso) {
     var audio = contextoDesbloqueado();
     if (!audio) return;
@@ -58,7 +85,7 @@
     var ganho = audio.createGain();
     oscilador.frequency.value = frequencia;
     oscilador.type = "sine";
-    ganho.gain.setValueAtTime(volume, inicio);
+    ganho.gain.setValueAtTime(volume * volumeBipes, inicio);
     ganho.gain.exponentialRampToValueAtTime(0.001, inicio + duracao);
     oscilador.connect(ganho);
     ganho.connect(audio.destination);
@@ -99,7 +126,8 @@
       carregandoVoz = false;
       var fonte = audio.createBufferSource();
       fonte.buffer = buffer;
-      fonte.connect(audio.destination);
+      fonte.playbackRate.value = pedido.velocidade;
+      fonte.connect(obterSaidaVoz(audio));
       fonteVozAtiva = fonte;
       fonte.onended = function () {
         if (geracao !== geracaoVoz || filaVoz[0] !== pedido) return;
@@ -130,10 +158,21 @@
     }
   }
 
-  function reproduzirArquivo(arquivo, callbacks) {
+  function reproduzirArquivo(arquivo, callbacks, velocidade) {
     configurarAudioSession();
-    filaVoz.push({ arquivo: arquivo, callbacks: callbacks || {} });
+    filaVoz.push({
+      arquivo: arquivo,
+      callbacks: callbacks || {},
+      velocidade: velocidade === 0.88 ? 0.88 : 1
+    });
     avancarFilaVoz();
+  }
+
+  function configurarVolumes(volumes) {
+    volumes = volumes || {};
+    volumeVoz = Math.min(2.5, Math.max(0.5, Number(volumes.voz) || 1.5));
+    volumeBipes = Math.min(2.5, Math.max(0.5, Number(volumes.bipes) || 1));
+    if (saidaVoz && saidaVoz.gain) saidaVoz.gain.value = 3 * volumeVoz;
   }
 
   function cancelarVoz() {
@@ -163,6 +202,7 @@
 
   root.OssAudio = {
     configurarAudioSession: configurarAudioSession,
+    configurarVolumes: configurarVolumes,
     desbloquear: desbloquear,
     reproduzirArquivo: reproduzirArquivo,
     cancelarVoz: cancelarVoz,

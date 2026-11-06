@@ -9,6 +9,10 @@ with open("manifest.json", encoding="utf-8") as arquivo:
 print("manifest JSON valido: SIM")
 print("manifest icones:",
       [(icone["src"], os.path.isfile(icone["src"])) for icone in manifest["icons"]])
+icones_ausentes = [icone["src"] for icone in manifest["icons"]
+                   if not os.path.isfile(icone["src"])]
+if icones_ausentes:
+    raise SystemExit("Ícones do manifesto ausentes: " + ", ".join(icones_ausentes))
 
 with open("sw.js", encoding="utf-8") as arquivo:
     sw = arquivo.read()
@@ -30,7 +34,10 @@ for regra in re.finditer(r"([^{}]+)\{([^{}]*)\}", css):
 print("Blur em seletores do topo: NAO")
 bloco = sw.split("const PRECACHE = [", 1)[1].split("];", 1)[0]
 precache = re.findall(r'"([^"]+)"', bloco)
-print("PRECACHE ausentes:", [item for item in precache if not os.path.isfile(item)])
+precache_ausentes = [item for item in precache if not os.path.isfile(item)]
+if precache_ausentes:
+    raise SystemExit("Arquivos ausentes do precache: " + ", ".join(precache_ausentes))
+print("Arquivos do precache: OK", len(precache))
 
 linhas_precache = sw.split("const PRECACHE = [", 1)[1].split("];", 1)[0].splitlines()
 entradas_precache = [linha.strip() for linha in linhas_precache if re.match(r'^"', linha.strip())]
@@ -39,9 +46,20 @@ virgulas_ok = all(
     for indice, linha in enumerate(entradas_precache)
 )
 print("PRECACHE sintaxe virgulas: SIM" if virgulas_ok else "PRECACHE sintaxe virgulas: NAO")
+if not virgulas_ok:
+    raise SystemExit("Sintaxe das entradas de precache inválida")
 
 with open("index.html", encoding="utf-8") as arquivo:
     html = arquivo.read()
+versoes_html = re.findall(r'(?:id|class)="(?:more-version|about-version)">([^<]+)', html)
+if not versoes_html or any(versao != app_version.group(1) for versao in versoes_html):
+    raise SystemExit("Versões de fallback no HTML não correspondem à versão do app")
+with open("README.md", encoding="utf-8") as arquivo:
+    readme = arquivo.read()
+versao_readme = re.search(r'alt="Versão ([^"]+)"', readme)
+if not versao_readme or versao_readme.group(1) != app_version.group(1):
+    raise SystemExit("Versão do README não corresponde à versão do app")
+print("Versões de fallback no HTML: OK")
 tabata = html.split('id="tabata-view"', 1)[1].split("</main>", 1)[0]
 acoes_sparring = ['id="reset-timer"', 'id="configurar-sparring"']
 acoes_ausentes = [acao for acao in acoes_sparring if acao not in tabata]
@@ -52,11 +70,14 @@ if 'class="progress-ring-value"' not in tabata or "OssView.progressoFase(estado)
 print("Ações de reiniciar e configurar Sparring: OK")
 
 mais = html.split('id="mais-view"', 1)[1].split("</main>", 1)[0]
-if 'data-panel="historico"' in mais or 'data-panel="backup"' in mais:
-    raise SystemExit("Mais ainda mostra Histórico ou Backup")
+if 'data-panel="historico"' not in mais or 'data-panel="tutorial"' not in mais:
+    raise SystemExit("Tela Mais sem Histórico de treinos ou tutorial")
 if 'id="more-version"' not in mais:
     raise SystemExit("Tela Mais sem cartão de versão")
 print("Menu Mais e cartão de versão: OK")
+if 'id="tutorial-panel"' not in html or len(re.findall(r'data-tutorial-step="\d+"', html)) < 3:
+    raise SystemExit("Tutorial ilustrado incompleto")
+print("Tutorial ilustrado: OK")
 
 politica = html.split('id="politica-panel"', 1)[1].split("</section>", 1)[0]
 secoes_politica = ["Dados que ficam no seu aparelho", "Dados que não coletamos",
@@ -92,29 +113,40 @@ if 'id="ajustes-panel"' not in html or 'id="ajustes-version"' not in html:
     raise SystemExit("painel Ajustes sem elemento de versao")
 controles_ajustes = ['settings-content', 'id="ajuste-voz"',
                      'id="ajuste-bipes"', 'id="ajuste-wake"',
-                     'id="voz-selecao"', 'id="testar-voz"']
+                     'id="voz-selecao"', 'id="testar-voz"',
+                     "Vozes do aparelho, como Luciana, podem pausar"]
 controles_ausentes = [controle for controle in controles_ajustes if controle not in html]
 if controles_ausentes:
     raise SystemExit("Controles do painel Ajustes ausentes: " + ", ".join(controles_ausentes))
 print("Ajustes versao: SIM")
+if ('class="brand-logo"' not in tabata or 'icons/oss-timer-app-icon.svg' not in sw or
+        'id="workout-name"' not in tabata):
+    raise SystemExit("Logo, cache offline ou nome do treino na tela principal ausente")
+fase_principal = tabata.split('id="phase-panel"', 1)[1].split("</section>", 1)[0]
+if ('id="timer-display"' not in fase_principal or 'id="workout-name"' not in fase_principal or
+        fase_principal.index('id="timer-display"') > fase_principal.index('id="workout-name"')):
+    raise SystemExit("Nome do treino deve aparecer abaixo do timer principal")
 campos_editor = ['id="editor-titulo"', 'id="editor-total"', 'id="editor-rounds-summary"',
                  'id="editor-cycles-summary"', 'id="editor-intervalos"',
                  'id="editor-library"', 'id="concluir-editor"',
-                 'id="editor-fast-setup"', 'id="editor-fast-duration"', 'id="editor-fast-rounds"',
-                 'data-quick-value="300"', 'data-quick-value="10"']
+                 'id="editor-settings-title"', 'id="editor-name-field"']
 campos_editor_ausentes = [campo for campo in campos_editor if campo not in html]
 if campos_editor_ausentes:
     raise SystemExit("Editor de treino incompleto: " + ", ".join(campos_editor_ausentes))
 editor = html.split('id="editor-panel"', 1)[1].split('id="sobre-panel"', 1)[0]
 if "<details" in editor or 'id="editor-advanced"' not in editor:
     raise SystemExit("Ajustes do editor devem permanecer visíveis, sem seções recolhidas")
+if editor.index('id="editor-intervalos"') > editor.index('id="editor-name-field"'):
+    raise SystemExit("O nome do treino deve aparecer depois das configurações")
+if "editor-fast-" in editor or 'class="editor-hero"' in editor:
+    raise SystemExit("O editor não deve repetir os ajustes principais em cartões separados")
 if 'id="salvar-treino"' in editor or 'class="editor-footer"' in editor:
     raise SystemExit("O editor deve ter somente o botão Concluído para salvar e fechar")
 with open("app.js", encoding="utf-8") as arquivo:
     app = arquivo.read()
 if 'getElementById("concluir-editor").addEventListener' not in app:
     raise SystemExit("Botão Concluído sem ação para salvar e fechar o editor")
-if "desconectarEventosRondas = conectarEventosTimer(rondasTimer);" not in app:
+if 'conectarEventosTimer(rondasTimer, sessaoRondas, "Rondas")' not in app:
     raise SystemExit("Timer de Rondas sem avisos de áudio e voz")
 if 'if (chave === "wake") sincronizarWakeLock();' not in app:
     raise SystemExit("Ajuste de tela sempre ligada não é aplicado durante o treino")
@@ -134,7 +166,6 @@ if regras_ausentes:
     raise SystemExit("Layout horizontal dedicado ausente: " + ", ".join(regras_ausentes))
 alvos_toque = [
     "#editor-panel .interval-control button {\n  width: 44px;\n  min-height: 44px;",
-    "#editor-panel .editor-presets button {\n  min-width: 0;\n  min-height: 44px;",
 ]
 alvos_toque_ausentes = [regra for regra in alvos_toque if regra not in css]
 if alvos_toque_ausentes:
@@ -153,9 +184,14 @@ if areas_seguras_ausentes:
 print("Layout com viewport dinâmico e áreas seguras: OK")
 carregados = re.findall(r'(?:href|src)="([^"]+)"', html)
 carregados += re.findall(r'url\("([^"]+)"\)', css)
-carregados = [item for item in carregados if not re.match(r'^(?:https?:|mailto:|tel:)', item)]
-print("carregados ausentes do precache:",
-      [item for item in carregados if item not in precache and not item.startswith("photos/")])
+carregados = [item for item in carregados if not re.match(r'^(?:https?:|mailto:|tel:|data:|#)', item)]
+arquivos_locais_ausentes = [item for item in carregados if not os.path.isfile(item)]
+if arquivos_locais_ausentes:
+    raise SystemExit("Recursos locais ausentes: " + ", ".join(arquivos_locais_ausentes))
+nao_cacheados = [item for item in carregados if item not in precache]
+if nao_cacheados:
+    raise SystemExit("Recursos locais não incluídos no precache: " + ", ".join(nao_cacheados))
+print("Recursos locais e precache: OK")
 
 for caminho in ["icons/icon-192.png", "icons/icon-512.png",
                 "icons/apple-touch-icon.png"]:

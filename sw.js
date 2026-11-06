@@ -1,4 +1,4 @@
-const CACHE_NAME = "oss-timer-v0.9.42";
+const CACHE_NAME = "oss-timer-v0.9.48";
 const PRECACHE = [
   "index.html",
   "style.css",
@@ -25,7 +25,9 @@ const PRECACHE = [
   "icons/icon-512.png",
   "icons/apple-touch-icon.png",
   "icons/favicon.png",
-  "icons/icon-a.svg"
+  "icons/icon-a.svg",
+  "icons/oss-timer-app-icon.svg",
+  "photos/foto-sobre.jpg"
 ];
 
 self.addEventListener("install", function (event) {

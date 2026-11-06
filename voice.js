@@ -1,6 +1,7 @@
 (function (root) {
   "use strict";
 
+  var ID_VOZ_LOCAL = "oss-offline";
   var FALAS = {
     fase: "Preparar",
     aviso30: "Trinta segundos",
@@ -87,10 +88,11 @@
     return "";
   }
 
-  function falar(texto, selecao, callbacks) {
+  function falar(texto, selecao, callbacks, variacao) {
     if (!texto) return;
     callbacks = callbacks || {};
-    if (usarClipesOffline()) {
+    variacao = variacao === "grave" ? "grave" : "natural";
+    if ((selecao && selecao.offline === true) || (!selecao && usarClipesOffline())) {
       var arquivo = ARQUIVOS_FALA[texto];
       if (!arquivo || !root.OssAudio || typeof root.OssAudio.reproduzirArquivo !== "function") {
         var erro = new Error("O clipe de voz solicitado não está disponível.");
@@ -98,7 +100,7 @@
         else if (root.console && root.console.error) root.console.error(erro);
         return;
       }
-      root.OssAudio.reproduzirArquivo(arquivo, callbacks);
+      root.OssAudio.reproduzirArquivo(arquivo, callbacks, variacao === "grave" ? 0.88 : 1);
       return;
     }
     if (!root.speechSynthesis || typeof root.SpeechSynthesisUtterance !== "function") return;
@@ -106,8 +108,14 @@
     var vozPadrao = root.speechSynthesis.getVoices().filter(function (voz) {
       return voz.default;
     })[0];
-    fala.voice = resolverVozSelecionada(selecao, root.speechSynthesis.getVoices()) || escolherVoz(vozPadrao, root.speechSynthesis.getVoices());
+    fala.voice = selecao && selecao.offline === false
+      ? selecao.voice
+      : resolverVozSelecionada(selecao, root.speechSynthesis.getVoices()) || escolherVoz(vozPadrao, root.speechSynthesis.getVoices());
     fala.lang = "pt-BR";
+    if (variacao === "grave") {
+      fala.rate = 0.9;
+      fala.pitch = 0.8;
+    }
     if (typeof callbacks.onend === "function") fala.onend = callbacks.onend;
     if (typeof callbacks.onerror === "function") fala.onerror = callbacks.onerror;
     if (root.OssAudio && root.OssAudio.configurarAudioSession) {
@@ -122,6 +130,7 @@
   }
 
   root.OssVoice = {
+    ID_VOZ_LOCAL: ID_VOZ_LOCAL,
     FALAS: FALAS,
     usarClipesOffline: usarClipesOffline,
     arquivoDaFala: function (texto) { return ARQUIVOS_FALA[texto] || ""; },

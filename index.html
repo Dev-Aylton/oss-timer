@@ -30,8 +30,7 @@
           <button class="icon-button" id="open-ajustes" type="button" aria-label="Abrir ajustes"><svg viewBox="0 0 32 32" aria-hidden="true"><g fill="currentColor"><circle cx="16" cy="16" r="10.5"/><rect x="12.5" y="0.8" width="7" height="11" rx="2.2"/><rect x="12.5" y="0.8" width="7" height="11" rx="2.2" transform="rotate(45 16 16)"/><rect x="12.5" y="0.8" width="7" height="11" rx="2.2" transform="rotate(90 16 16)"/><rect x="12.5" y="0.8" width="7" height="11" rx="2.2" transform="rotate(135 16 16)"/><rect x="12.5" y="0.8" width="7" height="11" rx="2.2" transform="rotate(180 16 16)"/><rect x="12.5" y="0.8" width="7" height="11" rx="2.2" transform="rotate(225 16 16)"/><rect x="12.5" y="0.8" width="7" height="11" rx="2.2" transform="rotate(270 16 16)"/><rect x="12.5" y="0.8" width="7" height="11" rx="2.2" transform="rotate(315 16 16)"/></g><circle cx="16" cy="16" r="4.3" fill="none" stroke="var(--surface)" stroke-width="3.6"/><circle cx="16" cy="16" r="4.3" fill="none" stroke="currentColor" stroke-width="1.6"/></svg></button>
         </div>
         <span class="workout-title">
-          <span class="brand-lockup"><svg viewBox="0 0 32 32" aria-hidden="true"><circle cx="16" cy="17" r="11"/><path d="M16 10v7l5 3M12 2h8M23 6l2-2"/></svg><span class="brand-wordmark">OSS TIMER</span></span>
-          <small><span id="workout-name">SPARRING</span><span aria-hidden="true"> · </span><span id="workout-total">55:25</span></small>
+          <span class="brand-lockup"><img class="brand-logo" src="icons/oss-timer-app-icon.svg" alt="" aria-hidden="true"><span class="brand-copy"><strong class="brand-wordmark">OSS TIMER</strong><small class="workout-meta"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l3 2M9 2h6"/></svg><span id="workout-total">55:25</span></small></span></span>
         </span>
         <div class="timer-head-trailing">
           <button class="icon-button" id="configurar-sparring" type="button" aria-label="Configurar treino Sparring"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h10M18 7h2M4 17h2m4 0h10"/><circle cx="16" cy="7" r="2"/><circle cx="8" cy="17" r="2"/></svg></button>
@@ -42,6 +41,7 @@
         <div class="phase-name" id="phase-name">Preparar</div>
         <button class="icon-button phase-reset" id="reset-timer" type="button" aria-label="Reiniciar Sparring">↻</button>
         <div class="phase-time" id="timer-display" role="timer">00:10</div>
+        <div class="selected-workout-name" id="workout-name">SPARRING JIU-JITSU</div>
       </section>
       <section class="next-phase" id="next-phase">
         <button class="phase-side-action" id="previous-phase" type="button" aria-label="Fase anterior"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10 5 3 12l7 7M4 12h16"/></svg></button>
@@ -62,7 +62,7 @@
       <header class="timer-top">
         <button class="icon-button" id="open-ajustes-rondas" type="button" aria-label="Abrir ajustes"><svg viewBox="0 0 32 32" aria-hidden="true"><g fill="currentColor"><circle cx="16" cy="16" r="10.5"/><rect x="12.5" y="0.8" width="7" height="11" rx="2.2"/><rect x="12.5" y="0.8" width="7" height="11" rx="2.2" transform="rotate(45 16 16)"/><rect x="12.5" y="0.8" width="7" height="11" rx="2.2" transform="rotate(90 16 16)"/><rect x="12.5" y="0.8" width="7" height="11" rx="2.2" transform="rotate(135 16 16)"/><rect x="12.5" y="0.8" width="7" height="11" rx="2.2" transform="rotate(180 16 16)"/><rect x="12.5" y="0.8" width="7" height="11" rx="2.2" transform="rotate(225 16 16)"/><rect x="12.5" y="0.8" width="7" height="11" rx="2.2" transform="rotate(270 16 16)"/><rect x="12.5" y="0.8" width="7" height="11" rx="2.2" transform="rotate(315 16 16)"/></g><circle cx="16" cy="16" r="4.3" fill="none" stroke="var(--surface)" stroke-width="3.6"/><circle cx="16" cy="16" r="4.3" fill="none" stroke="currentColor" stroke-width="1.6"/></svg></button>
         <button class="workout-title" id="rondas-configurar" type="button">
-          <span class="brand-lockup"><svg viewBox="0 0 32 32" aria-hidden="true"><circle cx="16" cy="17" r="11"/><path d="M16 10v7l5 3M12 2h8M23 6l2-2"/></svg><span class="brand-wordmark">OSS TIMER</span></span>
+          <span class="brand-lockup"><img class="brand-logo" src="icons/oss-timer-app-icon.svg" alt="" aria-hidden="true"><span class="brand-wordmark">OSS TIMER</span></span>
           <small>RONDAS<span aria-hidden="true"> · </span><span id="rondas-total">25:05</span></small>
         </button>
         <button class="icon-button" id="rondas-reset" type="button" aria-label="Reiniciar rondas">↻</button>
@@ -83,7 +83,7 @@
       <header class="timer-top">
         <button class="icon-button" id="open-ajustes-crono" type="button" aria-label="Abrir ajustes"><svg viewBox="0 0 32 32" aria-hidden="true"><g fill="currentColor"><circle cx="16" cy="16" r="10.5"/><rect x="12.5" y="0.8" width="7" height="11" rx="2.2"/><rect x="12.5" y="0.8" width="7" height="11" rx="2.2" transform="rotate(45 16 16)"/><rect x="12.5" y="0.8" width="7" height="11" rx="2.2" transform="rotate(90 16 16)"/><rect x="12.5" y="0.8" width="7" height="11" rx="2.2" transform="rotate(135 16 16)"/><rect x="12.5" y="0.8" width="7" height="11" rx="2.2" transform="rotate(180 16 16)"/><rect x="12.5" y="0.8" width="7" height="11" rx="2.2" transform="rotate(225 16 16)"/><rect x="12.5" y="0.8" width="7" height="11" rx="2.2" transform="rotate(270 16 16)"/><rect x="12.5" y="0.8" width="7" height="11" rx="2.2" transform="rotate(315 16 16)"/></g><circle cx="16" cy="16" r="4.3" fill="none" stroke="var(--surface)" stroke-width="3.6"/><circle cx="16" cy="16" r="4.3" fill="none" stroke="currentColor" stroke-width="1.6"/></svg></button>
         <span class="workout-title">
-          <span class="brand-lockup"><svg viewBox="0 0 32 32" aria-hidden="true"><circle cx="16" cy="17" r="11"/><path d="M16 10v7l5 3M12 2h8M23 6l2-2"/></svg><span class="brand-wordmark">OSS TIMER</span></span>
+          <span class="brand-lockup"><img class="brand-logo" src="icons/oss-timer-app-icon.svg" alt="" aria-hidden="true"><span class="brand-wordmark">OSS TIMER</span></span>
           <small>CRONÔMETRO</small>
         </span>
         <button class="icon-button" id="livre-reset" type="button" aria-label="Reiniciar">↻</button>
@@ -104,12 +104,14 @@
     <main class="screen" id="mais-view" hidden>
       <header class="page-heading"><span class="brand-wordmark">OSS TIMER</span><h1>Mais</h1><p>Seu treino, seu ritmo.</p></header>
       <nav class="more-list">
+        <button data-panel="tutorial" type="button"><span>Como usar o aplicativo</span><b>›</b></button>
+        <button data-panel="historico" type="button"><span>Histórico de treinos</span><b>›</b></button>
         <button data-panel="sobre" type="button"><span>Sobre</span><b>›</b></button>
         <button data-panel="politica" type="button"><span>Política de Privacidade</span><b>›</b></button>
       </nav>
       <section class="version-card" aria-label="Versão do aplicativo">
         <span class="version-mark" aria-hidden="true">OSS</span>
-        <span class="version-copy"><small>OSS TIMER · PWA</small><strong>Versão <span id="more-version">0.9.36</span></strong></span>
+        <span class="version-copy"><small>OSS TIMER · PWA</small><strong>Versão <span id="more-version">0.9.48</span></strong></span>
         <span class="version-status">ATUAL</span>
       </section>
     </main>
@@ -135,10 +137,15 @@
         <label class="toggle-row"><span><strong>Instruções por voz</strong><small>Ouça as fases e os avisos do treino</small></span><input id="ajuste-voz" type="checkbox"></label>
         <label class="toggle-row"><span><strong>Sinais sonoros</strong><small>Bipes e alertas durante o treino</small></span><input id="ajuste-bipes" type="checkbox"></label>
         <div class="voice-controls">
-          <label class="settings-field" for="voz-selecao"><span>Voz em português</span><select id="voz-selecao"></select></label>
+          <label class="settings-field" for="voz-selecao"><span>Voz em português</span><select id="voz-selecao" aria-describedby="status-voz voice-music-warning"></select></label>
+          <label class="settings-field" for="voz-variacao"><span>Variante da voz</span><select id="voz-variacao"><option value="natural">Natural</option><option value="grave">Grave</option></select></label>
           <button class="voice-test" id="testar-voz" type="button"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M11 5 6 9H3v6h3l5 4V5Z"/><path d="M15 9a5 5 0 0 1 0 6m3-9a9 9 0 0 1 0 12"/></svg><span>Testar voz</span></button>
-          <p id="status-voz" class="voice-status" role="status" aria-live="polite">Voz: indisponível</p>
+          <p id="status-voz" class="voice-status" role="status" aria-live="polite">A voz OSS incluída mantém a música tocando.</p>
+          <p class="voice-music-warning">A voz OSS incluída é a opção padrão e funciona offline sem interromper outras mídias. Vozes do aparelho, como Luciana, podem pausar ou interromper músicas como o Spotify.</p>
         </div>
+        <label class="volume-control" for="volume-voz"><span><strong>Volume da voz</strong><output id="volume-voz-valor" for="volume-voz">150%</output></span><input id="volume-voz" type="range" min="50" max="250" step="10"></label>
+        <label class="volume-control" for="volume-bipes"><span><strong>Volume dos sinais</strong><output id="volume-bipes-valor" for="volume-bipes">100%</output></span><input id="volume-bipes" type="range" min="50" max="250" step="10"></label>
+        <p class="audio-mix-note">A variante grave usa a mesma voz em tom mais baixo; no iPhone, a voz continua funcionando offline e com a música.</p>
       </section>
       <section class="settings-group" aria-labelledby="settings-screen-title">
         <h2 id="settings-screen-title">Durante o treino</h2>
@@ -151,54 +158,87 @@
     </div>
   </section>
 
+  <section class="modal" id="historico-panel" hidden>
+    <header class="modal-header"><button data-close="historico-panel" type="button">Voltar</button><h1>Histórico</h1><span></span></header>
+    <div class="modal-content history-content">
+      <p class="history-intro">Suas sessões ficam salvas somente neste aparelho.</p>
+      <button id="apagar-historico" class="history-clear" type="button" hidden>Apagar todo o histórico</button>
+      <p id="historico-vazio" class="history-empty" hidden>Nenhum treino registrado ainda. As sessões concluídas aparecerão aqui.</p>
+      <div id="historico-lista" class="history-list"></div>
+    </div>
+  </section>
+
+  <section class="modal tutorial-panel" id="tutorial-panel" role="dialog" aria-modal="true" aria-labelledby="tutorial-title" hidden>
+    <header class="modal-header">
+      <button data-close="tutorial-panel" type="button">Fechar</button>
+      <h1 id="tutorial-title">Como usar</h1>
+      <span></span>
+    </header>
+    <div class="modal-content tutorial-content">
+      <div class="tutorial-progress" role="status" aria-live="polite">
+        <span id="tutorial-step-label">Passo 1 de 4</span>
+        <div class="tutorial-progress-track" aria-hidden="true"><span id="tutorial-progress-value"></span></div>
+      </div>
+      <section class="tutorial-step" data-tutorial-step="0" aria-labelledby="tutorial-step-title-0">
+        <div class="tutorial-illustration" aria-hidden="true">
+          <svg viewBox="0 0 280 180"><rect x="44" y="15" width="192" height="150" rx="22" fill="#17211a" stroke="#394a3d" stroke-width="2"/><rect x="57" y="30" width="166" height="74" rx="12" fill="#f5ff27"/><text x="140" y="61" fill="#101512" font-size="12" font-weight="700" text-anchor="middle">FASE ATUAL</text><text x="140" y="90" fill="#101512" font-size="34" font-weight="800" text-anchor="middle">05:00</text><rect x="57" y="112" width="78" height="38" rx="10" fill="#26352b"/><rect x="145" y="112" width="78" height="38" rx="10" fill="#26352b"/><text x="96" y="136" fill="#dce8df" font-size="10" text-anchor="middle">TABATA</text><text x="184" y="136" fill="#dce8df" font-size="10" text-anchor="middle">RONDAS</text><circle cx="140" cy="139" r="8" fill="#9bff3d"/></svg>
+        </div>
+        <p class="tutorial-eyebrow">PASSO 1 · ESCOLHA</p>
+        <h2 id="tutorial-step-title-0" tabindex="-1">Escolha como quer treinar</h2>
+        <p>Use as abas na parte de baixo: <strong>Tabata</strong> para intervalos personalizados, <strong>Rondas</strong> para rounds de luta ou <strong>Cronômetro</strong> para contar o tempo livre.</p>
+      </section>
+      <section class="tutorial-step" data-tutorial-step="1" aria-labelledby="tutorial-step-title-1" hidden>
+        <div class="tutorial-illustration" aria-hidden="true">
+          <svg viewBox="0 0 280 180"><circle cx="140" cy="88" r="58" fill="#17211a" stroke="#9bff3d" stroke-width="8"/><circle cx="140" cy="88" r="45" fill="none" stroke="#35463a" stroke-width="3"/><path d="M130 66v44l36-22z" fill="#9bff3d"/><path d="M39 54h44M39 69h31M198 115h43M211 130h30" stroke="#8fa096" stroke-width="5" stroke-linecap="round"/><circle cx="56" cy="111" r="7" fill="#f5ff27"/><circle cx="224" cy="55" r="7" fill="#69d8ff"/></svg>
+        </div>
+        <p class="tutorial-eyebrow">PASSO 2 · CONTROLE</p>
+        <h2 id="tutorial-step-title-1" tabindex="-1">Comece e controle o timer</h2>
+        <p>Toque no botão grande para <strong>iniciar</strong>. Toque novamente para pausar e retomar. Use as setas para voltar ou pular uma fase. O tempo e a próxima etapa aparecem na tela.</p>
+      </section>
+      <section class="tutorial-step" data-tutorial-step="2" aria-labelledby="tutorial-step-title-2" hidden>
+        <div class="tutorial-illustration" aria-hidden="true">
+          <svg viewBox="0 0 280 180"><rect x="53" y="19" width="174" height="142" rx="18" fill="#17211a" stroke="#394a3d" stroke-width="2"/><text x="140" y="44" fill="#f4f7f4" font-size="13" font-weight="700" text-anchor="middle">AJUSTAR SPARRING</text><rect x="67" y="57" width="146" height="39" rx="10" fill="#25342a"/><text x="78" y="73" fill="#9eaca2" font-size="9">TEMPO POR ROUND</text><text x="78" y="88" fill="#f5ff27" font-size="14" font-weight="700">05:00</text><circle cx="190" cy="77" r="13" fill="#334639"/><path d="M190 70v14M183 77h14" stroke="#9bff3d" stroke-width="2"/><rect x="67" y="105" width="146" height="39" rx="10" fill="#25342a"/><text x="78" y="121" fill="#9eaca2" font-size="9">QUANTIDADE DE ROUNDS</text><text x="78" y="136" fill="#f5ff27" font-size="14" font-weight="700">10</text><circle cx="190" cy="125" r="13" fill="#334639"/><path d="M190 118v14M183 125h14" stroke="#9bff3d" stroke-width="2"/></svg>
+        </div>
+          <p class="tutorial-eyebrow">PASSO 3 · PERSONALIZE</p>
+        <h2 id="tutorial-step-title-2" tabindex="-1">Ajuste seu treino</h2>
+        <p>Toque no ícone de controles para editar o Sparring. Use <strong>−</strong> e <strong>+</strong>, digite o tempo ou escolha um atalho. Desça a tela para preparação, descanso e outros ajustes. Toque em <strong>Concluído</strong> para salvar.</p>
+      </section>
+      <section class="tutorial-step" data-tutorial-step="3" aria-labelledby="tutorial-step-title-3" hidden>
+        <div class="tutorial-illustration" aria-hidden="true">
+          <svg viewBox="0 0 280 180"><rect x="49" y="20" width="182" height="140" rx="20" fill="#17211a" stroke="#394a3d" stroke-width="2"/><path d="M85 62h110M85 92h110M85 122h110" stroke="#334438" stroke-width="2"/><circle cx="96" cy="62" r="11" fill="#9bff3d"/><path d="M92 62h8M96 58v8" stroke="#101512" stroke-width="2"/><path d="M87 92h18" stroke="#6bd7ff" stroke-width="6" stroke-linecap="round"/><circle cx="183" cy="92" r="8" fill="#6bd7ff"/><path d="M87 122h18" stroke="#f5ff27" stroke-width="6" stroke-linecap="round"/><circle cx="174" cy="122" r="8" fill="#f5ff27"/><path d="M198 53l5 5 9-11" fill="none" stroke="#9bff3d" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
+        <p class="tutorial-eyebrow">PASSO 4 · AJUDA E PROGRESSO</p>
+        <h2 id="tutorial-step-title-3" tabindex="-1">Configure avisos e veja seu histórico</h2>
+        <p>Em <strong>Ajustes</strong>, escolha a voz, o tom e os volumes. Em <strong>Mais → Histórico de treinos</strong>, veja sessões concluídas. Seus treinos e registros ficam salvos somente neste aparelho.</p>
+      </section>
+      <div class="tutorial-actions">
+        <button id="tutorial-back" type="button" disabled>Voltar</button>
+        <button id="tutorial-next" type="button">Próximo</button>
+        <button id="tutorial-finish" type="button" data-close="tutorial-panel" hidden>Concluir</button>
+      </div>
+    </div>
+  </section>
+
   <section class="modal" id="editor-panel" hidden>
     <header class="modal-header editor-header">
-      <button data-close="editor-panel" type="button">Cancelar</button>
-      <span class="editor-heading"><h1 id="editor-titulo">Ajustar Sparring</h1><small id="editor-contexto">CONFIGURAÇÃO DO TREINO</small></span>
+      <button data-close="editor-panel" type="button">Fechar</button>
+      <span class="editor-heading"><h1 id="editor-titulo">Ajustar Sparring</h1><small id="editor-contexto">SPARRING JIU-JITSU</small></span>
       <button id="concluir-editor" type="button">Concluído</button>
     </header>
     <div class="modal-content editor-content">
-      <section class="editor-hero">
-        <span class="editor-hero-mark" aria-hidden="true"><svg viewBox="0 0 32 32"><circle cx="16" cy="16" r="11"/><path d="M16 9v7l5 3M11 3h10"/></svg></span>
-        <span><strong id="editor-hero-title">Ajuste o treino no seu ritmo</strong><small id="editor-hero-copy">Tempos, pausas e rounds em um só lugar.</small></span>
+      <section class="editor-timing" id="editor-advanced" aria-labelledby="editor-settings-title">
+        <div class="editor-section-heading"><h2 id="editor-settings-title">Configurações do treino</h2></div>
+        <div id="editor-intervalos" class="interval-list"></div>
       </section>
       <label class="editor-name-card" id="editor-name-field">
         <span><strong>Nome do treino</strong></span>
-        <input id="editor-nome" maxlength="40" autocomplete="off" aria-label="Nome do treino">
+        <input id="editor-nome" maxlength="40" autocomplete="off" aria-label="Nome do treino" placeholder="SPARRING JIU-JITSU">
       </label>
-      <section class="editor-fast-setup" id="editor-fast-setup" aria-labelledby="editor-fast-title">
-        <div class="editor-section-heading"><span><small>AJUSTES PRINCIPAIS</small><h2 id="editor-fast-title">Tempo e rounds</h2></span></div>
-        <div class="editor-fast-grid">
-          <section class="editor-fast-card" aria-labelledby="editor-fast-duration-title">
-            <div class="editor-fast-card-heading"><span class="fast-card-icon" aria-hidden="true">◷</span><span><small>DURAÇÃO DE CADA ROUND</small><strong id="editor-fast-duration-title">Tempo de luta</strong></span></div>
-            <div id="editor-fast-duration" class="editor-fast-field"></div>
-            <div class="editor-presets" aria-label="Atalhos de duração">
-              <button type="button" data-quick-field="exercicio" data-quick-value="180" aria-pressed="false">3 min</button>
-              <button type="button" data-quick-field="exercicio" data-quick-value="300" aria-pressed="false">5 min</button>
-              <button type="button" data-quick-field="exercicio" data-quick-value="360" aria-pressed="false">6 min</button>
-              <button type="button" data-quick-field="exercicio" data-quick-value="480" aria-pressed="false">8 min</button>
-            </div>
-          </section>
-          <section class="editor-fast-card" aria-labelledby="editor-fast-rounds-title">
-            <div class="editor-fast-card-heading"><span class="fast-card-icon fast-card-icon--rounds" aria-hidden="true">↻</span><span><small>VOLUME DO TREINO</small><strong id="editor-fast-rounds-title">Quantidade de rounds</strong></span></div>
-            <div id="editor-fast-rounds" class="editor-fast-field"></div>
-            <div class="editor-presets" aria-label="Atalhos de quantidade de rounds">
-              <button type="button" data-quick-field="rondas" data-quick-value="3" aria-pressed="false">3</button>
-              <button type="button" data-quick-field="rondas" data-quick-value="5" aria-pressed="false">5</button>
-              <button type="button" data-quick-field="rondas" data-quick-value="10" aria-pressed="false">10</button>
-            </div>
-          </section>
-        </div>
-      </section>
       <section class="editor-summary" aria-label="Resumo do treino">
         <div class="editor-metric"><small>DURAÇÃO TOTAL</small><strong id="editor-total">55:25</strong></div>
         <div class="editor-metric"><small>ROUNDS</small><strong id="editor-rounds-summary">10</strong></div>
         <div class="editor-metric"><small>CICLOS</small><strong id="editor-cycles-summary">1</strong></div>
-        <p id="editor-preview-note" aria-live="polite">Inclui preparação, pausas e relaxamento.</p>
-      </section>
-      <section class="editor-timing" id="editor-advanced">
-        <div class="editor-section-heading"><span><small>PERSONALIZE O RITMO</small><h2>Preparação e intervalos</h2></span></div>
-        <div id="editor-intervalos" class="interval-list"></div>
+        <p id="editor-preview-note" aria-live="polite">A duração inclui preparação, intervalos e relaxamento.</p>
       </section>
       <section class="editor-library" id="editor-library">
         <div class="editor-section-heading"><span><small>SUA BIBLIOTECA</small><h2>Treinos salvos</h2></span></div>
@@ -223,7 +263,7 @@
       </div>
       <div class="about-version-card">
         <span class="version-mark" aria-hidden="true">OSS</span>
-        <span><small>VERSÃO DO APLICATIVO</small><strong>v<span class="about-version">0.9.41</span></strong></span>
+        <span><small>VERSÃO DO APLICATIVO</small><strong>v<span class="about-version">0.9.48</span></strong></span>
         <span class="version-status">PWA</span>
       </div>
       <div class="about-creator">
@@ -242,20 +282,20 @@
   <section class="modal" id="politica-panel" hidden>
     <header class="modal-header"><span></span><h1>Política de Privacidade</h1><button data-close="politica-panel" type="button">Concluído</button></header>
     <div class="modal-content privacy-policy">
-      <p class="policy-updated">Última atualização: 4 de novembro de 2026</p>
+      <p class="policy-updated">Última atualização: 6 de novembro de 2026</p>
       <p>Esta política explica, em linguagem simples, como o OSS Timer trata informações quando você usa o aplicativo.</p>
       <h2>Dados que ficam no seu aparelho</h2>
-      <p>Os treinos personalizados, a configuração de rondas e suas preferências (voz, bipes e tela ativa) são guardados no armazenamento local do navegador. Esses dados servem para manter suas configurações entre usos; não são enviados pelo aplicativo para um servidor.</p>
+      <p>Os treinos personalizados, a configuração de rondas, suas preferências (voz, volumes e tela ativa) e o histórico de sessões ficam guardados no armazenamento local do navegador. Esses dados servem para manter suas configurações e acompanhar os treinos; não são enviados pelo aplicativo para um servidor. Você pode excluir registros individuais ou apagar todo o histórico na tela Histórico.</p>
       <h2>Dados que não coletamos</h2>
       <p>O OSS Timer não solicita cadastro, nome, e-mail ou localização e não utiliza anúncios, cookies de rastreamento ou ferramentas de análise de uso. O cronômetro e as voltas funcionam no próprio aparelho.</p>
       <h2>Áudio e voz</h2>
-      <p>Quando habilitados, os sinais sonoros são gerados no aparelho. No iPhone, a voz usa clipes de áudio incluídos no aplicativo e reproduzidos pelo Web Audio, sem depender da síntese de fala do iOS; em outros dispositivos, usa a voz disponível no navegador ou sistema operacional. Os clipes não são enviados a um servidor.</p>
+      <p>Quando habilitados, os sinais sonoros são gerados no aparelho. A voz OSS incluída usa clipes locais do aplicativo em qualquer dispositivo. Se você escolher uma voz do aparelho, o navegador usa a síntese de fala do sistema, cujo comportamento com músicas pode variar; algumas vozes podem pausar ou interromper outras mídias. Nenhum áudio é enviado a um servidor.</p>
       <h2>Funcionamento offline e serviços externos</h2>
       <p>O navegador pode guardar os arquivos do aplicativo em cache para permitir o uso offline e atualizar esses arquivos quando houver conexão. O aplicativo não transmite seus treinos ou preferências durante esse processo. O link para o GitHub só é acessado se você escolher abri-lo e, nesse caso, valem também as políticas do serviço externo.</p>
       <h2>Controle e exclusão</h2>
-      <p>Você pode apagar os treinos e preferências removendo os dados do site nas configurações do navegador. Desinstalar o atalho PWA, por si só, pode não apagar os dados guardados pelo navegador. Registros de histórico criados em versões anteriores podem permanecer localmente até que os dados do site sejam removidos; a versão atual não mostra nem cria novos registros de histórico.</p>
+      <p>Você pode excluir treinos personalizados na tela de configuração, remover sessões individualmente ou apagar todo o histórico pela tela Histórico. Para apagar também as preferências, remova os dados do site nas configurações do navegador. Desinstalar o atalho PWA, por si só, pode não apagar os dados guardados pelo navegador.</p>
       <h2>Alterações e contato</h2>
-      <p>Esta política pode ser atualizada junto com o aplicativo. Para consultar o projeto, acesse o <a href="https://github.com/Dev-Aylton" target="_blank" rel="noopener noreferrer">GitHub do OSS Timer</a>.</p>
+      <p>Esta política pode ser atualizada junto com o aplicativo. Para consultar o projeto, acesse o <a href="https://github.com/Dev-Aylton/oss-timer" target="_blank" rel="noopener noreferrer">repositório do OSS Timer no GitHub</a>.</p>
     </div>
   </section>
 </body>

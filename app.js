@@ -1,12 +1,16 @@
 (function () {
   "use strict";
-  var APP_VERSION = "0.9.42";
+  var APP_VERSION = "0.9.48";
   var dados = OssStorage.ler();
   var treinoAtual = dados.treinos.filter(function (item) { return item.id === dados.treinoAtual; })[0] || dados.treinos[0];
   var config = OssStorage.normalizar(treinoAtual);
   var fases = OssEngine.construirFases(config);
   var timer = new OssEngine.Timer(config);
   var ajustes = OssStorage.lerAjustes();
+  var sessaoTabata = { atual: null };
+  var sessaoRondas = { atual: null };
+  var sessaoLivre = null;
+  var historico = OssStorage.lerHistorico();
   var wakeLock = null;
   var wakeLockRequest = 0;
   var desconectarEventosTimer = null;
@@ -34,6 +38,29 @@
   function tocarAudio(fn) {
     if (!ajustes.bipes) return;
     try { fn(); } catch (erro) { console.warn("Não foi possível reproduzir o áudio:", erro); }
+  }
+  function salvarSessao(nome, modo, segundos, voltas) {
+    historico = OssStorage.adicionarHistorico(historico, {
+      id: Date.now().toString(36) + "-" + Math.random().toString(36).slice(2, 8),
+      nome: nome,
+      modo: modo,
+      segundos: Math.max(0, Math.floor(segundos)),
+      data: new Date().toISOString(),
+      voltas: Array.isArray(voltas) ? voltas.slice() : []
+    });
+    historico = OssStorage.salvarHistorico(historico);
+    renderizarHistorico();
+  }
+  function iniciarRegistroSessao(sessao, nome) {
+    sessao.atual = { nome: nome, inicio: Date.now(), pausaEm: 0, pausadoMs: 0 };
+  }
+  function encerrarRegistroSessao(sessao, modo) {
+    var atual = sessao.atual;
+    if (!atual) return;
+    var agora = Date.now();
+    var pausadoMs = atual.pausadoMs + (atual.pausaEm ? agora - atual.pausaEm : 0);
+    salvarSessao(atual.nome, modo, (agora - atual.inicio - pausadoMs) / 1000);
+    sessao.atual = null;
   }
   function solicitarWakeLock() {
     if (!ajustes.wake || !navigator.wakeLock || wakeLock) return;
@@ -75,20 +102,28 @@
     try { OssAudio.desbloquear(); }
     catch (erro) { console.warn("Não foi possível ativar o áudio:", erro); }
   }
-  function conectarEventosTimer(instancia) {
+  function conectarEventosTimer(instancia, sessao, modo) {
     return instancia.aoEvento(function (evento) {
+      if (evento.tipo === "pausa" && sessao.atual && !sessao.atual.pausaEm) {
+        sessao.atual.pausaEm = Date.now();
+      } else if (evento.tipo === "retomada" && sessao.atual && sessao.atual.pausaEm) {
+        sessao.atual.pausadoMs += Date.now() - sessao.atual.pausaEm;
+        sessao.atual.pausaEm = 0;
+      } else if (evento.tipo === "fim") {
+        encerrarRegistroSessao(sessao, modo);
+      }
       tocarAudio(function () {
         if (evento.tipo === "fase" || evento.tipo === "fim") OssAudio.gongo();
         else if (evento.tipo === "contagem") OssAudio.contagem();
         else if (evento.tipo === "aviso" || evento.tipo === "proximo") OssAudio.bipe();
       });
       if (ajustes.voz) {
-        try { OssVoice.falar(OssVoice.fraseEvento(evento), vozSelecionada()); }
+        try { OssVoice.falar(OssVoice.fraseEvento(evento), vozSelecionada(), null, ajustes.variacaoVoz); }
         catch (erro) { console.warn("Não foi possível anunciar a fase:", erro); }
       }
     });
   }
-  desconectarEventosTimer = conectarEventosTimer(timer);
+  desconectarEventosTimer = conectarEventosTimer(timer, sessaoTabata, "Tabata");
 
   function corFase(estado) {
     return OssView.corDaFase(estado.fase, estado.restanteFase, estado.status);
@@ -121,6 +156,9 @@
     }
   }
   document.getElementById("toggle-timer").addEventListener("click", function () {
+    if (timer.estado().status === "parado" || timer.estado().status === "finalizado") {
+      iniciarRegistroSessao(sessaoTabata, treinoAtual.nome);
+    }
     timer.alternar();
     if (timer.estado().status === "rodando") desbloquearAudio();
     sincronizarWakeLock();
@@ -139,14 +177,19 @@
   window.addEventListener("pagehide", function () { liberarWakeLock(); });
   document.getElementById("skip-phase").addEventListener("click", function () { timer.pular(); renderizarTimer(); });
   document.getElementById("previous-phase").addEventListener("click", function () { timer.anterior(); renderizarTimer(); });
-  document.getElementById("reset-timer").addEventListener("click", function () { timer.reset(); sincronizarWakeLock(); renderizarTimer(); });
+  document.getElementById("reset-timer").addEventListener("click", function () {
+    sessaoTabata.atual = null;
+    timer.reset();
+    sincronizarWakeLock();
+    renderizarTimer();
+  });
   document.getElementById("configurar-sparring").addEventListener("click", function () { abrirEditor(false); });
   document.getElementById("open-ajustes").addEventListener("click", function () { abrirModal("ajustes-panel"); });
 
   var rondasCfg = OssStorage.lerRondas();
   var duracaoRondas = OssEngine.totalSegundos(OssEngine.construirFases(rondasCfg));
   var rondasTimer = new OssEngine.Timer(rondasCfg);
-  desconectarEventosRondas = conectarEventosTimer(rondasTimer);
+  desconectarEventosRondas = conectarEventosTimer(rondasTimer, sessaoRondas, "Rondas");
   function renderizarRondas() {
     var estado = rondasTimer.estado();
     var cor = corFase(estado);
@@ -189,12 +232,20 @@
     }
   }
   document.getElementById("rondas-toggle").addEventListener("click", function () {
+    if (rondasTimer.estado().status === "parado" || rondasTimer.estado().status === "finalizado") {
+      iniciarRegistroSessao(sessaoRondas, "Rondas");
+    }
     rondasTimer.alternar();
     if (rondasTimer.estado().status === "rodando") desbloquearAudio();
     sincronizarWakeLock();
     renderizarRondas();
   });
-  document.getElementById("rondas-reset").addEventListener("click", function () { rondasTimer.reset(); sincronizarWakeLock(); renderizarRondas(); });
+  document.getElementById("rondas-reset").addEventListener("click", function () {
+    sessaoRondas.atual = null;
+    rondasTimer.reset();
+    sincronizarWakeLock();
+    renderizarRondas();
+  });
   document.getElementById("rondas-configurar").addEventListener("click", function () { abrirEditor(true); });
   document.getElementById("open-ajustes-rondas").addEventListener("click", function () { abrirModal("ajustes-panel"); });
 
@@ -243,7 +294,17 @@
     document.getElementById("marcar-volta").disabled = estadoLivre.status === "parado";
   }
   document.getElementById("livre-toggle").addEventListener("click", function () {
+    var antes = livre.estado().status;
     livre.alternar();
+    var depois = livre.estado().status;
+    if (antes === "parado") {
+      sessaoLivre = { inicio: Date.now(), pausaEm: 0, pausadoMs: 0 };
+    } else if (depois === "pausado" && sessaoLivre && !sessaoLivre.pausaEm) {
+      sessaoLivre.pausaEm = Date.now();
+    } else if (antes === "pausado" && sessaoLivre && sessaoLivre.pausaEm) {
+      sessaoLivre.pausadoMs += Date.now() - sessaoLivre.pausaEm;
+      sessaoLivre.pausaEm = 0;
+    }
     sincronizarWakeLock();
     renderizarLivre();
   });
@@ -252,6 +313,12 @@
     renderizarLivre();
   });
   document.getElementById("livre-reset").addEventListener("click", function () {
+    var estadoLivre = livre.estado();
+    if (sessaoLivre && estadoLivre.decorrido > 0) {
+      if (!window.confirm("Salvar esta sessão no histórico e zerar o cronômetro?")) return;
+      salvarSessao("Cronômetro livre", "Cronômetro", estadoLivre.decorrido, estadoLivre.voltas);
+    }
+    sessaoLivre = null;
     livre = new OssEngine.Cronometro({ preparar: 0 });
     sincronizarWakeLock();
     renderizarLivre();
@@ -259,11 +326,56 @@
   document.getElementById("open-ajustes-crono").addEventListener("click", function () { abrirModal("ajustes-panel"); });
 
   function abrirModal(id) { document.getElementById(id).hidden = false; }
+  var origemTutorial = null;
   document.querySelectorAll("[data-close]").forEach(function (botao) {
-    botao.addEventListener("click", function () { document.getElementById(botao.dataset.close).hidden = true; });
+    botao.addEventListener("click", function () {
+      document.getElementById(botao.dataset.close).hidden = true;
+      if (botao.dataset.close === "tutorial-panel" && origemTutorial) {
+        origemTutorial.focus();
+        origemTutorial = null;
+      }
+    });
   });
   document.querySelectorAll("[data-panel]").forEach(function (botao) {
-    botao.addEventListener("click", function () { abrirModal(botao.dataset.panel + "-panel"); });
+    botao.addEventListener("click", function () {
+      abrirModal(botao.dataset.panel + "-panel");
+      if (botao.dataset.panel === "historico") renderizarHistorico();
+      if (botao.dataset.panel === "tutorial") {
+        origemTutorial = botao;
+        passoTutorial = 0;
+        renderizarPassoTutorial(true);
+      }
+    });
+  });
+
+  var passoTutorial = 0;
+  var etapasTutorial = Array.prototype.slice.call(
+    document.querySelectorAll("[data-tutorial-step]")
+  );
+  function renderizarPassoTutorial(focarTitulo) {
+    etapasTutorial.forEach(function (etapa, indice) {
+      etapa.hidden = indice !== passoTutorial;
+    });
+    document.getElementById("tutorial-step-label").textContent =
+      "Passo " + (passoTutorial + 1) + " de " + etapasTutorial.length;
+    document.getElementById("tutorial-progress-value").style.width =
+      ((passoTutorial + 1) / etapasTutorial.length * 100) + "%";
+    document.getElementById("tutorial-back").disabled = passoTutorial === 0;
+    document.getElementById("tutorial-next").hidden = passoTutorial === etapasTutorial.length - 1;
+    document.getElementById("tutorial-finish").hidden = passoTutorial !== etapasTutorial.length - 1;
+    if (focarTitulo) {
+      document.getElementById("tutorial-step-title-" + passoTutorial).focus();
+    }
+  }
+  document.getElementById("tutorial-back").addEventListener("click", function () {
+    if (passoTutorial === 0) return;
+    passoTutorial -= 1;
+    renderizarPassoTutorial(true);
+  });
+  document.getElementById("tutorial-next").addEventListener("click", function () {
+    if (passoTutorial >= etapasTutorial.length - 1) return;
+    passoTutorial += 1;
+    renderizarPassoTutorial(true);
   });
   document.querySelectorAll("[data-tab]").forEach(function (botao) {
     botao.addEventListener("click", function () {
@@ -278,13 +390,13 @@
 
   var editandoRondas = false;
   var intervaloCampos = [
-    { chave:"preparar", nome:"Preparação", descricao:"Tempo antes de começar a primeira ronda.", grupo:"intervalos", tipo:"duracao", minimo:0, maximo:3600, passo:5, cor:"prep" },
-    { chave:"exercicio", nome:"Tempo de luta", descricao:"Duração de cada ronda ativa.", grupo:"intervalos", tipo:"duracao", minimo:0, maximo:86400, passo:30, cor:"work" },
-    { chave:"descanso", nome:"Descanso entre rondas", descricao:"Pausa entre as rondas do mesmo ciclo.", grupo:"intervalos", tipo:"duracao", minimo:0, maximo:86400, passo:5, cor:"rest" },
-    { chave:"rondas", nome:"Rondas por ciclo", descricao:"Quantas vezes o tempo de luta se repete.", grupo:"intervalos", tipo:"quantidade", minimo:1, maximo:100, passo:1, cor:"rounds" },
-    { chave:"ciclos", nome:"Ciclos", descricao:"Quantas vezes repetir o bloco de rondas.", grupo:"ciclos", tipo:"quantidade", minimo:1, maximo:100, passo:1, cor:"cycles" },
-    { chave:"descansoCiclo", nome:"Descanso entre ciclos", descricao:"Pausa ao terminar cada bloco de rondas.", grupo:"ciclos", tipo:"duracao", minimo:0, maximo:86400, passo:30, cor:"rest" },
-    { chave:"relaxe", nome:"Relaxamento final", descricao:"Tempo extra ao concluir todas as rondas.", grupo:"ciclos", tipo:"duracao", minimo:0, maximo:86400, passo:30, cor:"finish" }
+    { chave:"preparar", nome:"Preparação", descricao:"Tempo antes de começar a primeira ronda.", tipo:"duracao", minimo:0, maximo:3600, passo:5, cor:"prep" },
+    { chave:"exercicio", nome:"Tempo de luta", descricao:"Duração de cada ronda ativa.", tipo:"duracao", minimo:0, maximo:86400, passo:30, cor:"work" },
+    { chave:"descanso", nome:"Descanso entre rondas", descricao:"Pausa entre as rondas do mesmo ciclo.", tipo:"duracao", minimo:0, maximo:86400, passo:5, cor:"rest" },
+    { chave:"rondas", nome:"Rondas por ciclo", descricao:"Quantas vezes o tempo de luta se repete.", tipo:"quantidade", minimo:1, maximo:100, passo:1, cor:"rounds" },
+    { chave:"ciclos", nome:"Ciclos", descricao:"Quantas vezes repetir o bloco de rondas.", tipo:"quantidade", minimo:1, maximo:100, passo:1, cor:"cycles" },
+    { chave:"descansoCiclo", nome:"Descanso entre ciclos", descricao:"Pausa ao terminar cada bloco de rondas.", tipo:"duracao", minimo:0, maximo:86400, passo:30, cor:"rest" },
+    { chave:"relaxe", nome:"Relaxamento final", descricao:"Tempo extra ao concluir todas as rondas.", tipo:"duracao", minimo:0, maximo:86400, passo:30, cor:"finish" }
   ];
   function formatarDuracaoEditor(segundos) {
     return OssEngine.formatar(segundos);
@@ -318,11 +430,6 @@
       Number.isInteger(valores.rondas) ? valores.rondas : "—";
     document.getElementById("editor-cycles-summary").textContent =
       Number.isInteger(valores.ciclos) ? valores.ciclos : "—";
-    document.querySelectorAll(".editor-presets button").forEach(function (botao) {
-      var campo = intervaloCampos.filter(function (item) { return item.chave === botao.dataset.quickField; })[0];
-      var valor = campo ? valorCampoEditor(campo) : NaN;
-      botao.setAttribute("aria-pressed", Number(botao.dataset.quickValue) === valor ? "true" : "false");
-    });
     var nota = document.getElementById("editor-preview-note");
     if (!valido) {
       document.getElementById("editor-total").textContent = "—";
@@ -335,54 +442,18 @@
       formatarDuracaoEditor(OssEngine.totalSegundos(fasesEditor));
     nota.textContent = "A duração inclui preparação, intervalos e relaxamento.";
   }
-  document.querySelectorAll(".editor-presets button").forEach(function (botao) {
-    botao.addEventListener("click", function () {
-      var campo = intervaloCampos.filter(function (item) { return item.chave === botao.dataset.quickField; })[0];
-      if (!campo) return;
-      var input = document.querySelector('[data-campo="' + campo.chave + '"]');
-      if (!input) return;
-      var valor = Number(botao.dataset.quickValue);
-      input.value = campo.tipo === "duracao" ? formatarDuracaoEditor(valor) : String(valor);
-      atualizarResumoEditor();
-    });
-  });
   function abrirEditor(rondas) {
     editandoRondas = rondas;
     var atual = rondas ? OssStorage.lerRondas() : config;
     document.getElementById("editor-titulo").textContent = rondas ? "Ajustar Rondas" : "Ajustar Sparring";
-    document.getElementById("editor-contexto").textContent = rondas ? "CONFIGURAÇÃO DE RONDAS" : "CONFIGURAÇÃO DO TREINO";
-    document.getElementById("editor-hero-title").textContent = rondas ? "Ajuste o timer de rounds" : "Ajuste o treino no seu ritmo";
-    document.getElementById("editor-hero-copy").textContent = rondas
-      ? "Tempo, preparação e pausas em um só lugar."
-      : "Tempos, pausas e rounds em um só lugar.";
-    document.getElementById("editor-fast-title").textContent = rondas ? "Próximas rondas" : "Próximo sparring";
-    document.getElementById("editor-fast-duration-title").textContent = rondas ? "Tempo por ronda" : "Tempo de luta";
-    document.getElementById("editor-fast-rounds-title").textContent = rondas ? "Rondas no treino" : "Quantidade de rounds";
+    document.getElementById("editor-contexto").textContent =
+      rondas ? "CONFIGURAÇÃO INDEPENDENTE" : treinoAtual.nome;
     document.getElementById("editor-name-field").hidden = rondas;
     document.getElementById("editor-library").hidden = rondas;
     document.getElementById("editor-nome").value = rondas ? "" : treinoAtual.nome;
     document.getElementById("editor-status").textContent = "";
     var lista = document.getElementById("editor-intervalos");
     lista.textContent = "";
-    document.getElementById("editor-fast-duration").textContent = "";
-    document.getElementById("editor-fast-rounds").textContent = "";
-    var grupos = [
-      { id:"intervalos", titulo:"Preparação e rondas", descricao:"Aquecimento, luta e pausa entre cada round." },
-      { id:"ciclos", titulo:"Ciclos e encerramento", descricao:"Repetições e os intervalos finais do treino." }
-    ];
-    grupos.forEach(function (grupo) {
-      var secao = document.createElement("section");
-      secao.className = "interval-group";
-      var cabecalho = document.createElement("div");
-      cabecalho.className = "interval-group-heading";
-      cabecalho.innerHTML = "<strong>" + grupo.titulo + "</strong><small>" + grupo.descricao + "</small>";
-      secao.appendChild(cabecalho);
-      var camposGrupo = document.createElement("div");
-      camposGrupo.className = "interval-group-fields";
-      camposGrupo.dataset.grupo = grupo.id;
-      secao.appendChild(camposGrupo);
-      lista.appendChild(secao);
-    });
     intervaloCampos.forEach(function (campo) {
       var idCampo = "editor-campo-" + campo.chave;
       var linha = document.createElement("div");
@@ -444,21 +515,18 @@
         });
       });
       input.addEventListener("input", atualizarResumoEditor);
-      if (campo.chave === "exercicio") {
-        document.getElementById("editor-fast-duration").appendChild(linha);
-      } else if (campo.chave === "rondas") {
-        document.getElementById("editor-fast-rounds").appendChild(linha);
-      } else {
-        document.querySelector('[data-grupo="' + campo.grupo + '"]').appendChild(linha);
-      }
-    });
-    lista.querySelectorAll(".interval-group").forEach(function (secao) {
-      if (!secao.querySelector(".interval-row")) secao.remove();
+      lista.appendChild(linha);
     });
     renderizarListaTreinos();
     atualizarResumoEditor();
     abrirModal("editor-panel");
   }
+  document.getElementById("editor-nome").addEventListener("input", function () {
+    if (!editandoRondas) {
+      document.getElementById("editor-contexto").textContent =
+        this.value.trim() || "SPARRING JIU-JITSU";
+    }
+  });
   function salvarTreino() {
     var copia = {};
     try {
@@ -480,7 +548,8 @@
         duracaoRondas = OssEngine.totalSegundos(OssEngine.construirFases(rondasCfg));
         if (desconectarEventosRondas) desconectarEventosRondas();
         rondasTimer = new OssEngine.Timer(normalizado);
-        desconectarEventosRondas = conectarEventosTimer(rondasTimer);
+        sessaoRondas.atual = null;
+        desconectarEventosRondas = conectarEventosTimer(rondasTimer, sessaoRondas, "Rondas");
         sincronizarWakeLock();
         renderizarRondas();
       }
@@ -497,8 +566,9 @@
         config = OssStorage.normalizar(normalizado);
         fases = OssEngine.construirFases(config);
         if (desconectarEventosTimer) desconectarEventosTimer();
+        sessaoTabata.atual = null;
         timer = new OssEngine.Timer(config);
-        desconectarEventosTimer = conectarEventosTimer(timer);
+        desconectarEventosTimer = conectarEventosTimer(timer, sessaoTabata, "Tabata");
         sincronizarWakeLock();
         renderizarTimer();
         renderizarListaTreinos();
@@ -515,12 +585,15 @@
     var novo = OssStorage.normalizar(Object.assign({}, config, { id:"treino-" + Date.now(), nome:"Novo treino" }));
     dados = OssStorage.salvar({ version:1, treinoAtual:novo.id, treinos:dados.treinos.concat([novo]) });
     treinoAtual = novo;
+    sessaoTabata.atual = null;
     abrirEditor(false);
   });
   function renderizarListaTreinos() {
     var lista = document.getElementById("treino-lista");
     lista.textContent = "";
     dados.treinos.forEach(function (item) {
+      var linhaTreino = document.createElement("div");
+      linhaTreino.className = "saved-workout-row";
       var linha = document.createElement("button");
       linha.type = "button";
       linha.className = "saved-workout" + (item.id === dados.treinoAtual ? " is-current" : "");
@@ -552,19 +625,103 @@
         timer = new OssEngine.Timer(config);
         fases = OssEngine.construirFases(config);
         if (desconectarEventosTimer) desconectarEventosTimer();
-        desconectarEventosTimer = conectarEventosTimer(timer);
+        sessaoTabata.atual = null;
+        desconectarEventosTimer = conectarEventosTimer(timer, sessaoTabata, "Tabata");
         sincronizarWakeLock();
         renderizarTimer();
         abrirEditor(false);
       });
-      lista.appendChild(linha);
+      linhaTreino.appendChild(linha);
+      if (item.id !== "sparring") {
+        var excluir = document.createElement("button");
+        excluir.type = "button";
+        excluir.className = "saved-workout-delete";
+        excluir.setAttribute("aria-label", "Excluir treino " + item.nome);
+        excluir.textContent = "×";
+        excluir.addEventListener("click", function (evento) {
+          evento.stopPropagation();
+          if (!window.confirm('Excluir o treino "' + item.nome + '"?')) return;
+          dados.treinos = dados.treinos.filter(function (treino) { return treino.id !== item.id; });
+          if (dados.treinoAtual === item.id) {
+            treinoAtual = dados.treinos[0] || OssStorage.treinoSparring();
+            if (!dados.treinos.length) dados.treinos = [treinoAtual];
+            dados.treinoAtual = treinoAtual.id;
+            config = OssStorage.normalizar(treinoAtual);
+            fases = OssEngine.construirFases(config);
+            sessaoTabata.atual = null;
+            timer = new OssEngine.Timer(config);
+            if (desconectarEventosTimer) desconectarEventosTimer();
+            desconectarEventosTimer = conectarEventosTimer(timer, sessaoTabata, "Tabata");
+            renderizarTimer();
+          }
+          dados = OssStorage.salvar(dados);
+          renderizarListaTreinos();
+          document.getElementById("editor-status").textContent = "Treino excluído.";
+        });
+        linhaTreino.appendChild(excluir);
+      }
+      lista.appendChild(linhaTreino);
     });
   }
+
+  function renderizarHistorico() {
+    var lista = document.getElementById("historico-lista");
+    if (!lista) return;
+    lista.textContent = "";
+    document.getElementById("apagar-historico").hidden = historico.length === 0;
+    historico.forEach(function (item) {
+      var linha = document.createElement("article");
+      linha.className = "history-item";
+      var informacoes = document.createElement("div");
+      informacoes.className = "history-copy";
+      var titulo = document.createElement("strong");
+      titulo.textContent = item.nome || item.modo || "Treino";
+      var detalhe = document.createElement("small");
+      var data = new Date(item.data);
+      detalhe.textContent = (Number.isNaN(data.getTime()) ? "" : data.toLocaleString("pt-BR")) +
+        " · " + (item.modo || "Treino");
+      var duracao = document.createElement("b");
+      duracao.textContent = OssStorage.formatarDuracao(item.segundos);
+      informacoes.appendChild(titulo);
+      informacoes.appendChild(detalhe);
+      if (Array.isArray(item.voltas) && item.voltas.length) {
+        var voltas = document.createElement("small");
+        voltas.textContent = item.voltas.length +
+          (item.voltas.length === 1 ? " volta registrada" : " voltas registradas");
+        informacoes.appendChild(voltas);
+      }
+      linha.appendChild(informacoes);
+      linha.appendChild(duracao);
+      var excluir = document.createElement("button");
+      excluir.type = "button";
+      excluir.className = "history-delete";
+      excluir.setAttribute("aria-label", "Excluir registro de " + (item.nome || item.modo || "treino"));
+      excluir.textContent = "×";
+      excluir.addEventListener("click", function () {
+        historico = OssStorage.removerHistorico(historico, item.id);
+        historico = OssStorage.salvarHistorico(historico);
+        renderizarHistorico();
+      });
+      linha.appendChild(excluir);
+      lista.appendChild(linha);
+    });
+    document.getElementById("historico-vazio").hidden = historico.length > 0;
+  }
+  document.getElementById("apagar-historico").addEventListener("click", function () {
+    if (!historico.length || !window.confirm("Apagar todo o histórico de treinos?")) return;
+    historico = OssStorage.salvarHistorico([]);
+    renderizarHistorico();
+  });
 
   function configurarAjustes() {
     document.getElementById("ajuste-voz").checked = ajustes.voz;
     document.getElementById("ajuste-bipes").checked = ajustes.bipes;
     document.getElementById("ajuste-wake").checked = ajustes.wake;
+    document.getElementById("voz-variacao").value = ajustes.variacaoVoz;
+    document.getElementById("volume-voz").value = Math.round(ajustes.volumeVoz * 100);
+    document.getElementById("volume-bipes").value = Math.round(ajustes.volumeBipes * 100);
+    atualizarRotulosVolumes();
+    OssAudio.configurarVolumes({ voz: ajustes.volumeVoz, bipes: ajustes.volumeBipes });
     ["voz","bipes","wake"].forEach(function (chave) {
       document.getElementById("ajuste-" + chave).addEventListener("change", function () {
         ajustes[chave] = this.checked;
@@ -574,35 +731,61 @@
     });
     atualizarListaVozes();
   }
+  function atualizarRotulosVolumes() {
+    document.getElementById("volume-voz-valor").textContent =
+      document.getElementById("volume-voz").value + "%";
+    document.getElementById("volume-bipes-valor").textContent =
+      document.getElementById("volume-bipes").value + "%";
+  }
+  ["volume-voz", "volume-bipes"].forEach(function (id) {
+    document.getElementById(id).addEventListener("input", function () {
+      ajustes[id === "volume-voz" ? "volumeVoz" : "volumeBipes"] = Number(this.value) / 100;
+      ajustes = OssStorage.salvarAjustes(ajustes);
+      OssAudio.configurarVolumes({ voz: ajustes.volumeVoz, bipes: ajustes.volumeBipes });
+      atualizarRotulosVolumes();
+    });
+  });
+  document.getElementById("voz-variacao").addEventListener("change", function () {
+    ajustes.variacaoVoz = this.value === "grave" ? "grave" : "natural";
+    ajustes = OssStorage.salvarAjustes(ajustes);
+  });
   var vocesDisponiveis = [];
   function atualizarListaVozes() {
-    var usaClipesOffline = OssVoice.usarClipesOffline();
     vocesDisponiveis = typeof speechSynthesis === "undefined"
       ? []
       : OssVoice.vozesPortuguese(speechSynthesis.getVoices());
     var select = document.getElementById("voz-selecao");
     select.textContent = "";
-    select.add(new Option(usaClipesOffline ? "Voz incluída (offline)" : "Automática — Luciana se disponível", ""));
-    if (!usaClipesOffline) {
-      vocesDisponiveis.forEach(function (voz) {
-        var rotulo = voz.name
-          .replace(/^Microsoft\s+/i, "")
-          .replace(/\s*-\s*Portuguese\s*\(Brazil\)/i, " · Brasil");
-        select.add(new Option(rotulo, voz.name));
-      });
-      if (ajustes.vozNome) select.value = ajustes.vozNome;
+    select.add(new Option("Voz OSS incluída (offline)", OssVoice.ID_VOZ_LOCAL));
+    vocesDisponiveis.forEach(function (voz) {
+      var rotulo = voz.name
+        .replace(/^Microsoft\s+/i, "")
+        .replace(/\s*-\s*Portuguese\s*\(Brazil\)/i, " · Brasil");
+      select.add(new Option(rotulo, voz.name));
+    });
+    if (ajustes.vozNome && ajustes.vozNome !== OssVoice.ID_VOZ_LOCAL &&
+        !vocesDisponiveis.some(function (voz) {
+          return voz.name === ajustes.vozNome && voz.lang === ajustes.vozIdioma;
+        }) && !vocesDisponiveis.length) {
+      select.add(new Option(ajustes.vozNome + " (indisponível)", ajustes.vozNome));
     }
-    select.disabled = usaClipesOffline;
+    select.value = ajustes.vozNome || OssVoice.ID_VOZ_LOCAL;
+    if (!select.value) {
+      select.value = OssVoice.ID_VOZ_LOCAL;
+      ajustes.vozNome = OssVoice.ID_VOZ_LOCAL;
+      ajustes.vozIdioma = "";
+      ajustes = OssStorage.salvarAjustes(ajustes);
+    }
     var statusVoz = document.getElementById("status-voz");
-    var luciana = vocesDisponiveis.some(function (voz) { return /luciana/i.test(voz.name) && /^pt[-_]br$/i.test(voz.lang); });
-    statusVoz.textContent = usaClipesOffline
-      ? "No iPhone, a voz incluída toca junto com outras mídias."
-      : luciana
-        ? "Luciana está disponível e será usada no modo automático."
-        : vocesDisponiveis.length
-          ? vocesDisponiveis.length + " voz(es) em português disponível(is)."
-          : "Nenhuma voz em português disponível neste dispositivo.";
-    document.getElementById("testar-voz").disabled = !usaClipesOffline && vocesDisponiveis.length === 0;
+    var vozSistemaDisponivel = vocesDisponiveis.some(function (voz) {
+      return voz.name === select.value && voz.lang === ajustes.vozIdioma;
+    });
+    statusVoz.textContent = select.value === OssVoice.ID_VOZ_LOCAL
+      ? "Voz OSS selecionada: funciona offline e mantém a música tocando."
+      : vozSistemaDisponivel
+        ? "Voz do aparelho selecionada: pode pausar ou interromper músicas durante o treino."
+        : "A voz salva não está disponível; a voz OSS local será usada.";
+    document.getElementById("testar-voz").disabled = false;
   }
   if (typeof speechSynthesis !== "undefined") {
     if (speechSynthesis.addEventListener) speechSynthesis.addEventListener("voiceschanged", atualizarListaVozes);
@@ -610,19 +793,22 @@
   document.getElementById("voz-selecao").addEventListener("change", function () {
     var nomeSelecionado = this.value;
     var voz = vocesDisponiveis.filter(function (item) { return item.name === nomeSelecionado; })[0];
-    ajustes.vozNome = voz ? voz.name : ""; ajustes.vozIdioma = voz ? voz.lang : "";
+    ajustes.vozNome = voz ? voz.name : OssVoice.ID_VOZ_LOCAL;
+    ajustes.vozIdioma = voz ? voz.lang : "";
     ajustes = OssStorage.salvarAjustes(ajustes);
     atualizarListaVozes();
   });
   document.getElementById("testar-voz").addEventListener("click", function () {
     var botao = this; botao.disabled = true; botao.textContent = "Falando…";
-    try { OssVoice.falar(OssVoice.FALAS.fase, vozSelecionada(), { onend:function(){botao.disabled=false;botao.textContent="Testar voz";}, onerror:function(){botao.disabled=false;botao.textContent="Erro: voz indisponível";} }); }
+    try { OssVoice.falar(OssVoice.FALAS.fase, vozSelecionada(), { onend:function(){botao.disabled=false;botao.textContent="Testar voz";}, onerror:function(){botao.disabled=false;botao.textContent="Erro: voz indisponível";} }, ajustes.variacaoVoz); }
     catch (erro) { botao.disabled=false; botao.textContent="Erro: voz indisponível"; }
   });
   function vozSelecionada() {
-    if (typeof speechSynthesis === "undefined") return undefined;
-    return vocesDisponiveis.filter(function (voz) { return voz.name === ajustes.vozNome && voz.lang === ajustes.vozIdioma; })[0] ||
-      OssVoice.resolverVozSelecionada({ nome: ajustes.vozNome, idioma: ajustes.vozIdioma }, speechSynthesis.getVoices());
+    if (ajustes.vozNome === OssVoice.ID_VOZ_LOCAL) return { offline: true };
+    var voz = vocesDisponiveis.filter(function (item) {
+      return item.name === ajustes.vozNome && item.lang === ajustes.vozIdioma;
+    })[0];
+    return voz ? { offline: false, voice: voz } : { offline: true };
   }
 
   document.querySelectorAll(".about-version").forEach(function (el) { el.textContent = APP_VERSION; });
