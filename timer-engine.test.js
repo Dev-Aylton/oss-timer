@@ -54,6 +54,19 @@
       equal(navigatorSimulado.audioSession.type, "ambient");
       OssAudio.configurarAudioSession({});
     });
+
+    it("restaura a sessão de áudio para ambiente após interrupções do sistema", function () {
+      var navigatorSimulado = { audioSession: { type: "playback" } };
+      var eventos = [];
+      navigatorSimulado.audioSession.addEventListener = function (tipo, fn) {
+        eventos.push({ tipo: tipo, fn: fn });
+      };
+      OssAudio.configurarAudioSession(navigatorSimulado);
+      assert(eventos.some(function (evento) {
+        return evento.tipo === "interruptionbegin" || evento.tipo === "interruptionend";
+      }), "Esperava registrar pelo menos um evento de interrupção da sessão de áudio.");
+      equal(navigatorSimulado.audioSession.type, "ambient");
+    });
   });
 
   describe("OssEngine", function () {
@@ -588,6 +601,45 @@
       } finally {
         sintese.speak = falarOriginal;
         OssAudio.configurarAudioSession = configurarOriginal;
+      }
+    });
+
+    it("usa clipes offline em iPhone e iPad, mas não em outros dispositivos", function () {
+      equal(OssVoice.usarClipesOffline({ userAgent: "iPhone" }), true);
+      equal(OssVoice.usarClipesOffline({ userAgent: "iPad" }), true);
+      equal(OssVoice.usarClipesOffline({ userAgent: "Macintosh", maxTouchPoints: 5 }), true);
+      equal(OssVoice.usarClipesOffline({ userAgent: "Android" }), false);
+    });
+
+    it("mapeia todas as frases e números falados para clipes incluídos", function () {
+      var frases = ["Preparar", "Valendo", "Round", "Descanso", "Trinta segundos",
+        "Últimos dez segundos", "1", "2", "3", "Próximo round", "Treino finalizado"];
+      frases.forEach(function (frase) {
+        assert(OssVoice.arquivoDaFala(frase), "Clipe ausente para " + frase);
+      });
+      equal(OssVoice.arquivoDaFala("frase desconhecida"), "");
+    });
+
+    it("reproduz a fala do iPhone pelo áudio ambiente incluído", function () {
+      var navegadorOriginal = Object.getOwnPropertyDescriptor(root, "navigator");
+      var reproduzirOriginal = OssAudio.reproduzirArquivo;
+      var chamadas = [];
+      try {
+        Object.defineProperty(root, "navigator", {
+          configurable: true,
+          value: { userAgent: "iPhone" }
+        });
+        OssAudio.reproduzirArquivo = function (arquivo, callbacks) {
+          chamadas.push(arquivo, callbacks);
+        };
+        var callbacks = { onend: function () {} };
+        OssVoice.falar("Preparar", null, callbacks);
+        equal(chamadas[0], "audio-voz/preparar.wav");
+        equal(chamadas[1], callbacks);
+      } finally {
+        OssAudio.reproduzirArquivo = reproduzirOriginal;
+        if (navegadorOriginal) Object.defineProperty(root, "navigator", navegadorOriginal);
+        else delete root.navigator;
       }
     });
 

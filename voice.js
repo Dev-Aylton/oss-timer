@@ -9,6 +9,27 @@
     proximo: "Próximo round",
     fim: "Treino finalizado"
   };
+  var ARQUIVOS_FALA = {
+    "Preparar": "audio-voz/preparar.wav",
+    "Valendo": "audio-voz/valendo.wav",
+    "Round": "audio-voz/round.wav",
+    "Descanso": "audio-voz/descanso.wav",
+    "Trinta segundos": "audio-voz/trinta-segundos.wav",
+    "Últimos dez segundos": "audio-voz/ultimos-dez-segundos.wav",
+    "1": "audio-voz/contagem-1.wav",
+    "2": "audio-voz/contagem-2.wav",
+    "3": "audio-voz/contagem-3.wav",
+    "Próximo round": "audio-voz/proximo-round.wav",
+    "Treino finalizado": "audio-voz/treino-finalizado.wav"
+  };
+
+  function usarClipesOffline(navegador) {
+    navegador = navegador || root.navigator;
+    if (!navegador) return false;
+    var agente = String(navegador.userAgent || "");
+    return /iPhone|iPad|iPod/i.test(agente) ||
+      (/Macintosh/i.test(agente) && Number(navegador.maxTouchPoints) > 1);
+  }
 
   function escolherVoz(vozPadrao, voces) {
     voces = voces || (root.speechSynthesis && root.speechSynthesis.getVoices
@@ -67,14 +88,26 @@
   }
 
   function falar(texto, selecao, callbacks) {
-    if (!texto || !root.speechSynthesis || typeof root.SpeechSynthesisUtterance !== "function") return;
+    if (!texto) return;
+    callbacks = callbacks || {};
+    if (usarClipesOffline()) {
+      var arquivo = ARQUIVOS_FALA[texto];
+      if (!arquivo || !root.OssAudio || typeof root.OssAudio.reproduzirArquivo !== "function") {
+        var erro = new Error("O clipe de voz solicitado não está disponível.");
+        if (typeof callbacks.onerror === "function") callbacks.onerror(erro);
+        else if (root.console && root.console.error) root.console.error(erro);
+        return;
+      }
+      root.OssAudio.reproduzirArquivo(arquivo, callbacks);
+      return;
+    }
+    if (!root.speechSynthesis || typeof root.SpeechSynthesisUtterance !== "function") return;
     var fala = new root.SpeechSynthesisUtterance(texto);
     var vozPadrao = root.speechSynthesis.getVoices().filter(function (voz) {
       return voz.default;
     })[0];
     fala.voice = resolverVozSelecionada(selecao, root.speechSynthesis.getVoices()) || escolherVoz(vozPadrao, root.speechSynthesis.getVoices());
     fala.lang = "pt-BR";
-    callbacks = callbacks || {};
     if (typeof callbacks.onend === "function") fala.onend = callbacks.onend;
     if (typeof callbacks.onerror === "function") fala.onerror = callbacks.onerror;
     if (root.OssAudio && root.OssAudio.configurarAudioSession) {
@@ -85,10 +118,13 @@
 
   function cancelar() {
     if (root.speechSynthesis && root.speechSynthesis.cancel) root.speechSynthesis.cancel();
+    if (root.OssAudio && root.OssAudio.cancelarVoz) root.OssAudio.cancelarVoz();
   }
 
   root.OssVoice = {
     FALAS: FALAS,
+    usarClipesOffline: usarClipesOffline,
+    arquivoDaFala: function (texto) { return ARQUIVOS_FALA[texto] || ""; },
     escolherVoz: escolherVoz,
     vozesPortuguese: vozesPortuguese,
     resolverVozSelecionada: resolverVozSelecionada,

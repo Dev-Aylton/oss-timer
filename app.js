@@ -1,6 +1,6 @@
 (function () {
   "use strict";
-  var APP_VERSION = "0.9.40";
+  var APP_VERSION = "0.9.42";
   var dados = OssStorage.ler();
   var treinoAtual = dados.treinos.filter(function (item) { return item.id === dados.treinoAtual; })[0] || dados.treinos[0];
   var config = OssStorage.normalizar(treinoAtual);
@@ -576,27 +576,33 @@
   }
   var vocesDisponiveis = [];
   function atualizarListaVozes() {
+    var usaClipesOffline = OssVoice.usarClipesOffline();
     vocesDisponiveis = typeof speechSynthesis === "undefined"
       ? []
       : OssVoice.vozesPortuguese(speechSynthesis.getVoices());
     var select = document.getElementById("voz-selecao");
     select.textContent = "";
-    select.add(new Option("Automática — Luciana se disponível", ""));
-    vocesDisponiveis.forEach(function (voz) {
-      var rotulo = voz.name
-        .replace(/^Microsoft\s+/i, "")
-        .replace(/\s*-\s*Portuguese\s*\(Brazil\)/i, " · Brasil");
-      select.add(new Option(rotulo, voz.name));
-    });
-    if (ajustes.vozNome) select.value = ajustes.vozNome;
+    select.add(new Option(usaClipesOffline ? "Voz incluída (offline)" : "Automática — Luciana se disponível", ""));
+    if (!usaClipesOffline) {
+      vocesDisponiveis.forEach(function (voz) {
+        var rotulo = voz.name
+          .replace(/^Microsoft\s+/i, "")
+          .replace(/\s*-\s*Portuguese\s*\(Brazil\)/i, " · Brasil");
+        select.add(new Option(rotulo, voz.name));
+      });
+      if (ajustes.vozNome) select.value = ajustes.vozNome;
+    }
+    select.disabled = usaClipesOffline;
     var statusVoz = document.getElementById("status-voz");
     var luciana = vocesDisponiveis.some(function (voz) { return /luciana/i.test(voz.name) && /^pt[-_]br$/i.test(voz.lang); });
-    statusVoz.textContent = luciana
-      ? "Luciana está disponível e será usada no modo automático."
-      : vocesDisponiveis.length
-        ? vocesDisponiveis.length + " voz(es) em português disponível(is)."
-        : "Nenhuma voz em português disponível neste dispositivo.";
-    document.getElementById("testar-voz").disabled = vocesDisponiveis.length === 0;
+    statusVoz.textContent = usaClipesOffline
+      ? "No iPhone, a voz incluída toca junto com outras mídias."
+      : luciana
+        ? "Luciana está disponível e será usada no modo automático."
+        : vocesDisponiveis.length
+          ? vocesDisponiveis.length + " voz(es) em português disponível(is)."
+          : "Nenhuma voz em português disponível neste dispositivo.";
+    document.getElementById("testar-voz").disabled = !usaClipesOffline && vocesDisponiveis.length === 0;
   }
   if (typeof speechSynthesis !== "undefined") {
     if (speechSynthesis.addEventListener) speechSynthesis.addEventListener("voiceschanged", atualizarListaVozes);

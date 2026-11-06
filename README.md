@@ -7,9 +7,9 @@
 </p>
 
 <p align="center">
-  <img alt="Versão 0.9.40" src="https://img.shields.io/badge/vers%C3%A3o-0.9.40-8dff3d?style=for-the-badge&labelColor=101512">
+  <img alt="Versão 0.9.42" src="https://img.shields.io/badge/vers%C3%A3o-0.9.42-8dff3d?style=for-the-badge&labelColor=101512">
   <img alt="PWA instalável" src="https://img.shields.io/badge/PWA-instal%C3%A1vel-32d27a?style=for-the-badge&labelColor=101512">
-  <img alt="62 testes" src="https://img.shields.io/badge/testes-62%20aprovados-f5ff27?style=for-the-badge&labelColor=101512">
+  <img alt="65 testes" src="https://img.shields.io/badge/testes-65%20aprovados-f5ff27?style=for-the-badge&labelColor=101512">
 </p>
 
 O **OSS Timer** é um aplicativo web progressivo (PWA) feito para acompanhar o ritmo do treino sem tirar o foco da luta. A interface de alto contraste destaca a fase atual, o tempo restante e o que vem a seguir. Instale no celular ou use no navegador — inclusive offline, depois de carregar o app.
@@ -26,7 +26,8 @@ O **OSS Timer** é um aplicativo web progressivo (PWA) feito para acompanhar o r
 - **Timer de rondas** — acompanhe ronda e ciclo atuais, fases seguintes e tempo restante da sessão com uma configuração independente do Tabata.
 - **Cronômetro livre** — acompanhe o tempo decorrido e consulte as três voltas mais recentes, com tempo parcial e acumulado.
 - **Sinais durante o treino** — bipes, avisos por voz em português e contagem regressiva.
-- **Música durante avisos** — o app solicita uma sessão de áudio ambiente para que a fala possa tocar junto com outras mídias. O suporte depende do navegador e do iOS; confirme o comportamento no aparelho.
+- **Música durante avisos no iPhone** — clipes de voz em português incluídos no app são reproduzidos pelo Web Audio para permitir a mixagem com outras mídias; em outros dispositivos, o app usa a síntese de fala nativa.
+- **iPhone com notch e barra segura** — cabeçalho, área de ação e barra inferior respeitam os limites do aparelho sem blur excessivo nem sobreposição de texto ou botões.
 - **Sessão sem interrupções** — opção para manter a tela ligada durante o treino.
 - **Pronto para instalar** — PWA com cache offline, ícone OSS Timer otimizado para a tela inicial do iPhone e layout para celular.
 
@@ -74,6 +75,7 @@ app-ui.js            Apresentação e rótulos do timer
 timer-engine.js      Lógica de fases, rounds, ciclos e cronômetro
 storage.js           Persistência local de treinos e preferências
 audio.js / voice.js  Sinais sonoros e instruções por voz
+audio-voz/           Clipes offline usados pela voz no iPhone
 sw.js                Cache e funcionamento offline
 tests/               Página de testes e verificação do PWA
 ```
