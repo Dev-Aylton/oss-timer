@@ -134,6 +134,13 @@ campos_editor_ausentes = [campo for campo in campos_editor if campo not in html]
 if campos_editor_ausentes:
     raise SystemExit("Editor de treino incompleto: " + ", ".join(campos_editor_ausentes))
 editor = html.split('id="editor-panel"', 1)[1].split('id="sobre-panel"', 1)[0]
+editor_header = editor.split('class="modal-header editor-header"', 1)[1].split("</header>", 1)[0]
+if 'id="editor-contexto"' in editor_header or "SPARRING JIU-JITSU" in editor_header:
+    raise SystemExit("Nome do treino não deve aparecer no cabeçalho do editor")
+if ('grid-template-columns: minmax(0, 1fr) minmax(0, 2fr) minmax(0, 1fr);' not in css or
+        'justify-self: end;' not in css):
+    raise SystemExit("Cabeçalho do editor deve alinhar Fechar, título central e Concluído")
+print("Cabeçalho do editor: OK")
 if "<details" in editor or 'id="editor-advanced"' not in editor:
     raise SystemExit("Ajustes do editor devem permanecer visíveis, sem seções recolhidas")
 if editor.index('id="editor-intervalos"') > editor.index('id="editor-name-field"'):

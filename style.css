@@ -1393,7 +1393,7 @@ span.workout-title { cursor: default; }
 }
 
 #editor-panel .editor-header {
-  grid-template-columns: minmax(72px, 1fr) minmax(0, 2fr) minmax(72px, 1fr);
+  grid-template-columns: minmax(0, 1fr) minmax(0, 2fr) minmax(0, 1fr);
   min-height: 72px;
   padding: 8px 18px;
   background: var(--canvas);
@@ -1402,6 +1402,7 @@ span.workout-title { cursor: default; }
 #editor-panel .editor-header > button {
   width: fit-content;
   min-width: 44px;
+  white-space: nowrap;
   font-family: system-ui, sans-serif;
   font-size: 14px;
   font-weight: 650;
@@ -1410,8 +1411,9 @@ span.workout-title { cursor: default; }
 }
 
 #editor-panel .editor-header > button:last-child {
-  min-width: 76px;
-  padding: 0 15px;
+  justify-self: end;
+  min-width: 0;
+  padding: 0 12px;
   border: 1px solid rgba(50, 210, 122, 0.3);
   border-radius: 999px;
   background: linear-gradient(135deg, #9bff58, #78e92c);
@@ -1428,6 +1430,7 @@ span.workout-title { cursor: default; }
 }
 
 #editor-panel .editor-heading h1 {
+  margin: 0;
   color: #f5f8f5;
   font-family: system-ui, sans-serif;
   font-size: 16px;
@@ -1436,14 +1439,6 @@ span.workout-title { cursor: default; }
   text-transform: none;
 }
 
-#editor-panel .editor-heading small {
-  max-width: 100%;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.editor-heading small,
 .editor-section-heading > span > small {
   color: #91a197;
   font-size: 10px;
@@ -3763,4 +3758,17 @@ select:focus-visible {
   #editor-panel .editor-metric small { font-size: 10px; }
   #editor-panel .editor-metric strong { font-size: 24px; }
   #editor-panel .editor-summary > p { font-size: 12px; }
+}
+
+@media (max-width: 360px) {
+  #editor-panel .editor-header {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 2fr) minmax(0, 1fr);
+    gap: 4px;
+    padding-right: 8px;
+    padding-left: 8px;
+  }
+
+  #editor-panel .editor-header > button { font-size: 12px; }
+  #editor-panel .editor-header > button:last-child { padding-right: 4px; padding-left: 4px; }
+  #editor-panel .editor-heading h1 { font-size: 15px; white-space: nowrap; }
 }

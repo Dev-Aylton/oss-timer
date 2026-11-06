@@ -446,8 +446,6 @@
     editandoRondas = rondas;
     var atual = rondas ? OssStorage.lerRondas() : config;
     document.getElementById("editor-titulo").textContent = rondas ? "Ajustar Rondas" : "Ajustar Sparring";
-    document.getElementById("editor-contexto").textContent =
-      rondas ? "CONFIGURAÇÃO INDEPENDENTE" : treinoAtual.nome;
     document.getElementById("editor-name-field").hidden = rondas;
     document.getElementById("editor-library").hidden = rondas;
     document.getElementById("editor-nome").value = rondas ? "" : treinoAtual.nome;
@@ -521,12 +519,6 @@
     atualizarResumoEditor();
     abrirModal("editor-panel");
   }
-  document.getElementById("editor-nome").addEventListener("input", function () {
-    if (!editandoRondas) {
-      document.getElementById("editor-contexto").textContent =
-        this.value.trim() || "SPARRING JIU-JITSU";
-    }
-  });
   function salvarTreino() {
     var copia = {};
     try {
