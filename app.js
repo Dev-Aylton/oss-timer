@@ -1,6 +1,6 @@
 (function () {
   "use strict";
-  var APP_VERSION = "0.9.48";
+  var APP_VERSION = "0.9.54";
   var dados = OssStorage.ler();
   var treinoAtual = dados.treinos.filter(function (item) { return item.id === dados.treinoAtual; })[0] || dados.treinos[0];
   var config = OssStorage.normalizar(treinoAtual);
@@ -36,8 +36,13 @@
   }
 
   function tocarAudio(fn) {
-    if (!ajustes.bipes) return;
-    try { fn(); } catch (erro) { console.warn("Não foi possível reproduzir o áudio:", erro); }
+    if (!ajustes.bipes) return false;
+    try {
+      return fn() !== false;
+    } catch (erro) {
+      console.warn("Não foi possível reproduzir o áudio:", erro);
+      return false;
+    }
   }
   function salvarSessao(nome, modo, segundos, voltas) {
     historico = OssStorage.adicionarHistorico(historico, {
@@ -103,6 +108,7 @@
     catch (erro) { console.warn("Não foi possível ativar o áudio:", erro); }
   }
   function conectarEventosTimer(instancia, sessao, modo) {
+    var controlarGongo = OssAudio.criarControleGongo();
     return instancia.aoEvento(function (evento) {
       if (evento.tipo === "pausa" && sessao.atual && !sessao.atual.pausaEm) {
         sessao.atual.pausaEm = Date.now();
@@ -112,15 +118,22 @@
       } else if (evento.tipo === "fim") {
         encerrarRegistroSessao(sessao, modo);
       }
-      tocarAudio(function () {
-        if (evento.tipo === "fase" || evento.tipo === "fim") OssAudio.gongo();
-        else if (evento.tipo === "contagem") OssAudio.contagem();
-        else if (evento.tipo === "aviso" || evento.tipo === "proximo") OssAudio.bipe();
-      });
-      if (ajustes.voz) {
-        try { OssVoice.falar(OssVoice.fraseEvento(evento), vozSelecionada(), null, ajustes.variacaoVoz); }
+      var frase = ajustes.voz ? OssVoice.fraseEvento(evento) : "";
+      function anunciarEvento() {
+        if (!frase) return;
+        try { OssVoice.falar(frase, vozSelecionada(), null, ajustes.variacaoVoz); }
         catch (erro) { console.warn("Não foi possível anunciar a fase:", erro); }
       }
+      if (evento.tipo === "contagem") {
+        var bipeTocado = tocarAudio(function () { return OssAudio.contagem(); });
+        controlarGongo(evento, bipeTocado);
+      } else if (controlarGongo(evento) &&
+                 tocarAudio(function () { OssAudio.gongo(anunciarEvento); })) {
+        return;
+      } else if (evento.tipo === "aviso" || evento.tipo === "proximo") {
+        tocarAudio(function () { OssAudio.bipe(); });
+      }
+      anunciarEvento();
     });
   }
   desconectarEventosTimer = conectarEventosTimer(timer, sessaoTabata, "Tabata");

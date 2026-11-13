@@ -48,6 +48,89 @@
   }
 
   describe("OssAudio", function () {
+    it("só agenda o gongo após três bipes da preparação e antes do primeiro exercício", function () {
+      var decidir = OssAudio.criarControleGongo();
+      var preparar = { tipo: "fase", fase: { tipo: "preparar" } };
+      var primeiro = { tipo: "fase", fase: { tipo: "exercicio", ciclo: 1, ronda: 1 } };
+      var descanso = { tipo: "fase", fase: { tipo: "descanso", ciclo: 1, ronda: 1 } };
+      var segundo = { tipo: "fase", fase: { tipo: "exercicio", ciclo: 1, ronda: 2 } };
+      function contar() {
+        [3, 2, 1].forEach(function (valor) {
+          equal(decidir({ tipo: "contagem", valor: valor }, true), false);
+        });
+      }
+      equal(decidir(preparar), false);
+      contar();
+      equal(decidir(primeiro), true);
+      contar();
+      equal(decidir(descanso), false);
+      contar();
+      equal(decidir(segundo), false);
+      equal(decidir({ tipo: "fim" }), false);
+      equal(decidir(preparar), false);
+      equal(decidir({ tipo: "contagem", valor: 3 }, true), false);
+      equal(decidir({ tipo: "contagem", valor: 2 }, false), false);
+      equal(decidir({ tipo: "contagem", valor: 1 }, true), false);
+      equal(decidir(primeiro), false);
+      equal(decidir(preparar), false);
+      equal(decidir(primeiro), false);
+      equal(decidir(preparar), false);
+      contar();
+      equal(decidir(primeiro), true);
+    });
+
+    it("reforça o bip da contagem e os avisos", function () {
+      var construtorOriginal = Object.getOwnPropertyDescriptor(root, "AudioContext");
+      var ganhos = [];
+      var tempos = [];
+      var osciladores = [];
+      function AudioContextFalso() {
+        this.currentTime = 0;
+        this.state = "running";
+        this.destination = {};
+        this.createOscillator = function () {
+          var oscilador = {
+            frequency: {},
+            connect: function () {},
+            start: function () {},
+            stop: function () {}
+          };
+          osciladores.push(oscilador);
+          return oscilador;
+        };
+        this.createGain = function () {
+          return {
+            gain: {
+              setValueAtTime: function (valor, tempo) { ganhos.push(valor); tempos.push(tempo); },
+              exponentialRampToValueAtTime: function () {},
+              linearRampToValueAtTime: function () {}
+            },
+            connect: function () {}
+          };
+        };
+      }
+      try {
+        Object.defineProperty(root, "AudioContext", {
+          configurable: true,
+          value: AudioContextFalso
+        });
+        OssAudio.configurarVolumes({ bipes: 1 });
+        OssAudio.contagem();
+        equal(ganhos[0], 0.95);
+        equal(ganhos[1], 0.95);
+        equal(tempos[1], 0.12 * 0.6);
+        OssAudio.bipe();
+        equal(ganhos[2], 0.85);
+        equal(ganhos[3], 0.85);
+        equal(tempos[3], 0.09 * 0.6);
+        equal(osciladores.length, 2);
+      } finally {
+        if (construtorOriginal) Object.defineProperty(root, "AudioContext", construtorOriginal);
+        else delete root.AudioContext;
+        OssAudio.configurarVolumes({ bipes: 1 });
+      }
+    });
+
     it("define a sessão de áudio como ambient e aceita navigator sem audioSession", function () {
       var navigatorSimulado = { audioSession: { type: "auto" } };
       OssAudio.configurarAudioSession(navigatorSimulado);
@@ -636,10 +719,13 @@
     });
 
     it("mapeia todas as frases e números falados para clipes incluídos", function () {
-      var frases = ["Preparar", "Valendo", "Round", "Descanso", "Trinta segundos",
-        "Últimos dez segundos", "1", "2", "3", "Próximo round", "Treino finalizado"];
+      var frases = ["Preparar", "Valendo", "Descanso", "1", "2", "3",
+        "Próximo round", "Treino finalizado"];
       frases.forEach(function (frase) {
         assert(OssVoice.arquivoDaFala(frase), "Clipe ausente para " + frase);
+      });
+      ["Round", "Trinta segundos", "Últimos dez segundos"].forEach(function (frase) {
+        equal(OssVoice.arquivoDaFala(frase), "");
       });
       equal(OssVoice.arquivoDaFala("frase desconhecida"), "");
     });
@@ -710,6 +796,10 @@
         OssVoice.falar("Preparar", { offline: false, voice: voz });
         equal(chamadas.length, 1);
         equal(chamadas[0].voice, voz);
+        OssVoice.falar("Preparar", { offline: false, voice: voz }, {}, "grave");
+        equal(chamadas.length, 2);
+        equal(chamadas[1].rate, 1);
+        equal(chamadas[1].pitch, 0.8);
       } finally {
         sintese.speak = falarOriginal;
         OssAudio.configurarAudioSession = configurarOriginal;
@@ -720,7 +810,7 @@
       }
     });
 
-    it("seleciona a variante grave dos clipes offline", function () {
+    it("mantém as falas offline rápidas também na variante grave", function () {
       var navegadorOriginal = Object.getOwnPropertyDescriptor(root, "navigator");
       var reproduzirOriginal = OssAudio.reproduzirArquivo;
       var velocidade = 0;
@@ -731,7 +821,7 @@
         });
         OssAudio.reproduzirArquivo = function (arquivo, callbacks, taxa) { velocidade = taxa; };
         OssVoice.falar("Preparar", null, {}, "grave");
-        equal(velocidade, 0.88);
+        equal(velocidade, 1.15);
       } finally {
         OssAudio.reproduzirArquivo = reproduzirOriginal;
         if (navegadorOriginal) Object.defineProperty(root, "navigator", navegadorOriginal);
@@ -740,8 +830,8 @@
     });
 
     it("usa frase curta para cada evento sonoro principal", function () {
-      equal(OssVoice.fraseEvento({ tipo: "aviso", segundos: 30 }), OssVoice.FALAS.aviso30);
-      equal(OssVoice.fraseEvento({ tipo: "aviso", segundos: 10 }), OssVoice.FALAS.aviso10);
+      equal(OssVoice.fraseEvento({ tipo: "aviso", segundos: 30 }), "");
+      equal(OssVoice.fraseEvento({ tipo: "aviso", segundos: 10 }), "");
       equal(OssVoice.fraseEvento({ tipo: "contagem", valor: 3 }), "3");
       equal(OssVoice.fraseEvento({ tipo: "proximo", segundos: 10 }), OssVoice.FALAS.proximo);
       equal(OssVoice.fraseEvento({ tipo: "fim" }), OssVoice.FALAS.fim);
@@ -749,12 +839,12 @@
 
     it("gera início de fase como round ou descanso conforme a fase", function () {
       equal(OssVoice.fraseEvento({ tipo: "fase", indice: 1, fase: { tipo: "exercicio", ciclo: 1, ronda: 1 } }), "Valendo");
-      equal(OssVoice.fraseEvento({ tipo: "fase", indice: 3, fase: { tipo: "exercicio", ciclo: 1, ronda: 2 } }), "Round");
+      equal(OssVoice.fraseEvento({ tipo: "fase", indice: 3, fase: { tipo: "exercicio", ciclo: 1, ronda: 2 } }), "");
       equal(OssVoice.fraseEvento({ tipo: "fase", indice: 1, fase: { tipo: "descanso" } }), "Descanso");
       equal(OssVoice.fraseEvento({ tipo: "fase", indice: 0, fase: { tipo: "preparar" } }), "Preparar");
     });
 
-    it("fala Valendo apenas no início do treino e não repete nos rounds", function () {
+    it("fala Valendo apenas no início do treino e silencia rounds seguintes", function () {
       var clock = relogioFalso();
       var timer = new OssEngine.Timer(cfg({ preparar: 2, exercicio: 4, descanso: 1 }), { now: clock.now });
       var falas = [];
@@ -764,7 +854,7 @@
       timer.iniciar();
       clock.avancar(7);
       timer.tick();
-      deepEqual(falas, ["Preparar", "Valendo", "Descanso", "Round"]);
+      deepEqual(falas, ["Preparar", "Valendo", "Descanso", ""]);
       equal(falas.filter(function (frase) { return frase === "Valendo"; }).length, 1);
     });
 

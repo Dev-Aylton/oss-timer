@@ -4,19 +4,13 @@
   var ID_VOZ_LOCAL = "oss-offline";
   var FALAS = {
     fase: "Preparar",
-    aviso30: "Trinta segundos",
-    aviso10: "Últimos dez segundos",
-    contagem: "Contagem",
     proximo: "Próximo round",
     fim: "Treino finalizado"
   };
   var ARQUIVOS_FALA = {
     "Preparar": "audio-voz/preparar.wav",
     "Valendo": "audio-voz/valendo.wav",
-    "Round": "audio-voz/round.wav",
     "Descanso": "audio-voz/descanso.wav",
-    "Trinta segundos": "audio-voz/trinta-segundos.wav",
-    "Últimos dez segundos": "audio-voz/ultimos-dez-segundos.wav",
     "1": "audio-voz/contagem-1.wav",
     "2": "audio-voz/contagem-2.wav",
     "3": "audio-voz/contagem-3.wav",
@@ -74,14 +68,12 @@
   function fraseEvento(evento) {
     if (evento.tipo === "fase") {
       if (evento.fase && evento.fase.tipo === "exercicio") {
-        return evento.fase.ciclo === 1 && evento.fase.ronda === 1 ? "Valendo" : "Round";
+        return evento.fase.ciclo === 1 && evento.fase.ronda === 1 ? "Valendo" : "";
       }
       if (evento.fase && evento.fase.tipo === "descanso") return "Descanso";
       if (evento.fase && evento.fase.tipo === "preparar") return FALAS.fase;
       return "";
     }
-    if (evento.tipo === "aviso" && evento.segundos === 30) return FALAS.aviso30;
-    if (evento.tipo === "aviso" && evento.segundos === 10) return FALAS.aviso10;
     if (evento.tipo === "contagem") return String(evento.valor);
     if (evento.tipo === "proximo") return FALAS.proximo;
     if (evento.tipo === "fim") return FALAS.fim;
@@ -100,7 +92,7 @@
         else if (root.console && root.console.error) root.console.error(erro);
         return;
       }
-      root.OssAudio.reproduzirArquivo(arquivo, callbacks, variacao === "grave" ? 0.88 : 1);
+      root.OssAudio.reproduzirArquivo(arquivo, callbacks, 1.15);
       return;
     }
     if (!root.speechSynthesis || typeof root.SpeechSynthesisUtterance !== "function") return;
@@ -113,7 +105,7 @@
       : resolverVozSelecionada(selecao, root.speechSynthesis.getVoices()) || escolherVoz(vozPadrao, root.speechSynthesis.getVoices());
     fala.lang = "pt-BR";
     if (variacao === "grave") {
-      fala.rate = 0.9;
+      fala.rate = 1;
       fala.pitch = 0.8;
     }
     if (typeof callbacks.onend === "function") fala.onend = callbacks.onend;

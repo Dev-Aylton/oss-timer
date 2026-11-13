@@ -10,6 +10,8 @@
   var volumeVoz = 1.5;
   var volumeBipes = 1;
   var geracaoVoz = 0;
+  var bufferGongo = null;
+  var carregamentoGongo = null;
 
   function aplicarTipoAudioAmbient(sessao) {
     if (!sessao) return;
@@ -77,24 +79,54 @@
     return saidaVoz;
   }
 
-  function tocar(frequencia, duracao, volume, atraso) {
+  function tocar(frequencia, duracao, volume, atraso, aoTerminar) {
     var audio = contextoDesbloqueado();
-    if (!audio) return;
+    if (!audio) {
+      if (typeof aoTerminar === "function") aoTerminar();
+      return false;
+    }
     var inicio = audio.currentTime + (atraso || 0);
     var oscilador = audio.createOscillator();
     var ganho = audio.createGain();
     oscilador.frequency.value = frequencia;
     oscilador.type = "sine";
     ganho.gain.setValueAtTime(volume * volumeBipes, inicio);
+    ganho.gain.setValueAtTime(volume * volumeBipes, inicio + duracao * 0.6);
     ganho.gain.exponentialRampToValueAtTime(0.001, inicio + duracao);
+    if (typeof aoTerminar === "function") oscilador.onended = aoTerminar;
     oscilador.connect(ganho);
     ganho.connect(audio.destination);
     oscilador.start(inicio);
     oscilador.stop(inicio + duracao);
+    return true;
   }
 
   function desbloquear() {
-    contextoDesbloqueado();
+    var audio = contextoDesbloqueado();
+    if (audio && typeof root.fetch === "function") {
+      carregarGongo(audio).catch(function (erro) {
+        if (root.console && root.console.warn) root.console.warn("Não foi possível preparar o gongo:", erro);
+      });
+    }
+  }
+
+  function carregarGongo(audio) {
+    if (bufferGongo) return Promise.resolve(bufferGongo);
+    if (carregamentoGongo) return carregamentoGongo;
+    carregamentoGongo = root.fetch("audio-voz/gongo.mp3").then(function (resposta) {
+      if (!resposta.ok) throw new Error("Não foi possível carregar o gongo.");
+      return resposta.arrayBuffer();
+    }).then(function (dados) {
+      return audio.decodeAudioData(dados);
+    }).then(function (buffer) {
+      bufferGongo = buffer;
+      carregamentoGongo = null;
+      return buffer;
+    }).catch(function (erro) {
+      carregamentoGongo = null;
+      throw erro;
+    });
+    return carregamentoGongo;
   }
 
   function carregarBufferVoz(audio, arquivo) {
@@ -163,7 +195,7 @@
     filaVoz.push({
       arquivo: arquivo,
       callbacks: callbacks || {},
-      velocidade: velocidade === 0.88 ? 0.88 : 1
+      velocidade: Math.min(1.3, Math.max(0.75, Number(velocidade) || 1))
     });
     avancarFilaVoz();
   }
@@ -188,16 +220,78 @@
   }
 
   function bipe() {
-    tocar(880, 0.09, 0.16);
+    tocar(880, 0.09, 0.85 * Math.min(1, 0.95 / (0.85 * volumeBipes)));
   }
 
   function contagem() {
-    tocar(660, 0.12, 0.18);
+    return tocar(660, 0.12, 0.95 * Math.min(1, 0.95 / (0.95 * volumeBipes)));
   }
 
-  function gongo() {
-    tocar(220, 0.55, 0.22);
-    tocar(330, 0.45, 0.12, 0.08);
+  function criarControleGongo() {
+    var preparando = false;
+    var esperado = 3;
+    return function (evento, bipeTocado) {
+      if (evento.tipo === "fase") {
+        var inicio = preparando && esperado === 0 && evento.fase &&
+          evento.fase.tipo === "exercicio" &&
+          evento.fase.ciclo === 1 && evento.fase.ronda === 1;
+        preparando = !!(evento.fase && evento.fase.tipo === "preparar");
+        esperado = 3;
+        return !!inicio;
+      }
+      if (evento.tipo === "contagem" && preparando) {
+        esperado = bipeTocado && evento.valor === esperado ? esperado - 1 : 3;
+      } else if (evento.tipo === "fim") {
+        preparando = false;
+        esperado = 3;
+      }
+      return false;
+    };
+  }
+
+  function gongo(aoTerminar) {
+    var audio = contextoDesbloqueado();
+    if (!audio || typeof root.fetch !== "function") {
+      if (root.console && root.console.error) root.console.error("A reprodução do gongo não está disponível.");
+      if (typeof aoTerminar === "function") aoTerminar();
+      return false;
+    }
+
+    carregarGongo(audio).then(function (buffer) {
+      var fonte = audio.createBufferSource();
+      var ganho = audio.createGain();
+      var compressor = typeof audio.createDynamicsCompressor === "function"
+        ? audio.createDynamicsCompressor()
+        : null;
+      var duracao = Math.min(buffer.duration, 2.25);
+      var volume = compressor ? 6 * volumeBipes : Math.min(1, volumeBipes);
+      var inicio = audio.currentTime;
+      fonte.buffer = buffer;
+      ganho.gain.setValueAtTime(volume, inicio);
+      ganho.gain.setValueAtTime(volume, inicio + Math.max(0, duracao - 0.1));
+      ganho.gain.linearRampToValueAtTime(0, inicio + duracao);
+      fonte.connect(ganho);
+      if (compressor) {
+        var saida = audio.createGain();
+        saida.gain.value = 1.1;
+        compressor.threshold.value = -12;
+        compressor.knee.value = 0;
+        compressor.ratio.value = 20;
+        compressor.attack.value = 0;
+        compressor.release.value = 0.15;
+        ganho.connect(compressor);
+        compressor.connect(saida);
+        saida.connect(audio.destination);
+      } else {
+        ganho.connect(audio.destination);
+      }
+      if (typeof aoTerminar === "function") fonte.onended = aoTerminar;
+      fonte.start(inicio, 0, duracao);
+    }).catch(function (erro) {
+      if (root.console && root.console.error) root.console.error("Não foi possível reproduzir o gongo:", erro);
+      if (typeof aoTerminar === "function") aoTerminar();
+    });
+    return true;
   }
 
   root.OssAudio = {
@@ -208,6 +302,7 @@
     cancelarVoz: cancelarVoz,
     bipe: bipe,
     contagem: contagem,
+    criarControleGongo: criarControleGongo,
     gongo: gongo
   };
 }(typeof globalThis !== "undefined" ? globalThis : this));

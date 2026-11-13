@@ -1,4 +1,4 @@
-const CACHE_NAME = "oss-timer-v0.9.48";
+const CACHE_NAME = "oss-timer-v0.9.54";
 const PRECACHE = [
   "index.html",
   "style.css",
@@ -6,12 +6,10 @@ const PRECACHE = [
   "app-ui.js",
   "audio.js",
   "voice.js",
+  "audio-voz/gongo.mp3",
   "audio-voz/preparar.wav",
   "audio-voz/valendo.wav",
-  "audio-voz/round.wav",
   "audio-voz/descanso.wav",
-  "audio-voz/trinta-segundos.wav",
-  "audio-voz/ultimos-dez-segundos.wav",
   "audio-voz/contagem-1.wav",
   "audio-voz/contagem-2.wav",
   "audio-voz/contagem-3.wav",

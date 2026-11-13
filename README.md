@@ -7,9 +7,9 @@
 </p>
 
 <p align="center">
-  <img alt="Versão 0.9.48" src="https://img.shields.io/badge/vers%C3%A3o-0.9.48-8dff3d?style=for-the-badge&labelColor=101512">
+  <img alt="Versão 0.9.54" src="https://img.shields.io/badge/vers%C3%A3o-0.9.54-8dff3d?style=for-the-badge&labelColor=101512">
   <img alt="PWA instalável" src="https://img.shields.io/badge/PWA-instal%C3%A1vel-32d27a?style=for-the-badge&labelColor=101512">
-  <img alt="72 testes" src="https://img.shields.io/badge/testes-72%20aprovados-f5ff27?style=for-the-badge&labelColor=101512">
+  <img alt="74 testes" src="https://img.shields.io/badge/testes-74%20aprovados-f5ff27?style=for-the-badge&labelColor=101512">
 </p>
 
 O **OSS Timer** é um aplicativo web progressivo (PWA) feito para acompanhar o ritmo do treino sem tirar o foco da luta. A interface de alto contraste destaca a fase atual, o tempo restante e o que vem a seguir. Instale no celular ou use no navegador — inclusive offline, depois de carregar o app.
@@ -25,7 +25,7 @@ O **OSS Timer** é um aplicativo web progressivo (PWA) feito para acompanhar o r
 - **Tabata e treinos personalizados** — ajuste preparação, luta, pausas, rounds e ciclos em sequência; a prévia mostra a duração total.
 - **Timer de rondas** — acompanhe ronda e ciclo atuais, fases seguintes e tempo restante da sessão com uma configuração independente do Tabata.
 - **Cronômetro livre** — acompanhe o tempo decorrido e consulte as três voltas mais recentes, com tempo parcial e acumulado.
-- **Sinais durante o treino** — bipes, avisos por voz em português e contagem regressiva, com volumes ajustáveis.
+- **Sinais durante o treino** — contagem regressiva com bipes reforçados e avisos por voz em português, com volumes ajustáveis. Após os três bipes da preparação, um gongo suave antecede o “Valendo”; se não houver os três bipes, o treino começa sem o gongo.
 - **Voz no iPhone** — voz OSS incluída selecionada por padrão, com opções de tom natural ou grave; vozes do aparelho avisam que podem interromper músicas.
 - **Histórico local** — registre sessões concluídas e voltas do cronômetro; consulte e apague os registros no próprio aparelho.
 - **Treinos personalizados** — crie, selecione e exclua treinos salvos (o treino padrão fica protegido).
@@ -33,7 +33,9 @@ O **OSS Timer** é um aplicativo web progressivo (PWA) feito para acompanhar o r
 - **iPhone com notch e barra segura** — cabeçalho, área de ação e barra inferior respeitam os limites do aparelho sem blur excessivo nem sobreposição de texto ou botões.
 - **Sessão sem interrupções** — opção para manter a tela ligada durante o treino.
 - **Pronto para instalar** — PWA com cache offline, ícone OSS Timer otimizado para a tela inicial do iPhone e interface vertical pensada para iPhone 13 ou superior.
-- **Versão 0.9.48** — melhora o cabeçalho do timer, os alvos de toque em telas estreitas e o suporte offline da tela Sobre.
+- **Versão 0.9.54** — reforça o volume dos bipes e do gongo suave antes do “Valendo”.
+
+O gongo é uma adaptação de [Soft Mallet Swelling Gong Hit 59, SFXMint](https://sfxmint.com/sounds/instrument-gong-59), disponibilizado sob CC0 1.0.
 
 ## Começar
 

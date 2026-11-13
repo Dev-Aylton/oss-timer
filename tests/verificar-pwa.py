@@ -38,6 +38,11 @@ precache_ausentes = [item for item in precache if not os.path.isfile(item)]
 if precache_ausentes:
     raise SystemExit("Arquivos ausentes do precache: " + ", ".join(precache_ausentes))
 print("Arquivos do precache: OK", len(precache))
+with open("audio.js", encoding="utf-8") as arquivo:
+    audio_js = arquivo.read()
+if '"audio-voz/gongo.mp3"' not in audio_js or "audio-voz/gongo.mp3" not in precache:
+    raise SystemExit("Gongo ausente do áudio ou do precache offline")
+print("Gongo de luta no precache: OK")
 
 linhas_precache = sw.split("const PRECACHE = [", 1)[1].split("];", 1)[0].splitlines()
 entradas_precache = [linha.strip() for linha in linhas_precache if re.match(r'^"', linha.strip())]
