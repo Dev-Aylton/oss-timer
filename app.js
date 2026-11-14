@@ -1,6 +1,6 @@
 (function () {
   "use strict";
-  var APP_VERSION = "0.9.54";
+  var APP_VERSION = "0.9.56";
   var dados = OssStorage.ler();
   var treinoAtual = dados.treinos.filter(function (item) { return item.id === dados.treinoAtual; })[0] || dados.treinos[0];
   var config = OssStorage.normalizar(treinoAtual);
@@ -130,7 +130,7 @@
       } else if (controlarGongo(evento) &&
                  tocarAudio(function () { OssAudio.gongo(anunciarEvento); })) {
         return;
-      } else if (evento.tipo === "aviso" || evento.tipo === "proximo") {
+      } else if (evento.tipo === "proximo") {
         tocarAudio(function () { OssAudio.bipe(); });
       }
       anunciarEvento();

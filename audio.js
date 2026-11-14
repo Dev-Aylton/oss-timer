@@ -273,7 +273,7 @@
       fonte.connect(ganho);
       if (compressor) {
         var saida = audio.createGain();
-        saida.gain.value = 1.1;
+        saida.gain.value = 3;
         compressor.threshold.value = -12;
         compressor.knee.value = 0;
         compressor.ratio.value = 20;
